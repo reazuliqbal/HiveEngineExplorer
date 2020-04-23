@@ -1,4 +1,4 @@
-# he-explorer
+# HiveEngineExplorer
 
 ## Project setup
 ```
