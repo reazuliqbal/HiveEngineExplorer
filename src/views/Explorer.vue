@@ -104,10 +104,7 @@
               class="small"
               :title="new Date(h.timestamp * 1000).toGMTString()"
             >
-              {{ formatDistanceToNow(
-              new Date(h.timestamp * 1000),
-              { includeSeconds: true, addSuffix: true }
-              ) }}
+              <timeago :datetime="new Date(h.timestamp * 1000)" :auto-update="60"></timeago>
             </router-link>
 
             <router-link

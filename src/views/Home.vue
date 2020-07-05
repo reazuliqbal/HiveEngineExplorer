@@ -102,9 +102,7 @@
               class="small"
               :title="timestamp.toGMTString()"
             >
-              {{
-              formatDistanceToNow(timestamp,{ includeSeconds: true, addSuffix: true })
-              }}
+              <timeago :datetime="timestamp" :auto-update="60"></timeago>
             </router-link>
 
             <router-link

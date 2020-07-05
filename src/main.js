@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Loading from 'vue-loading-overlay';
+import VueTimeago from 'vue-timeago';
 import {
   ButtonPlugin, NavbarPlugin, FormInputPlugin,
   PaginationPlugin, TablePlugin, LayoutPlugin,
@@ -21,6 +22,10 @@ Vue.use(PaginationPlugin);
 Vue.use(TablePlugin);
 Vue.use(LayoutPlugin);
 Vue.use(FormPlugin);
+Vue.use(VueTimeago, {
+  name: 'Timeago',
+  locale: 'en',
+});
 
 Vue.use(Loading, {
   color: 'red',
