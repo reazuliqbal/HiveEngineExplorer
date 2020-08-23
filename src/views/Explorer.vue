@@ -30,6 +30,12 @@
               <code>{{ h.quantity }} {{ h.symbol }}</code>
             </template>
 
+            <template v-else-if="h.operation === 'tokens_undelegateStart'">
+              <a :href="`/@${h.to}`">@{{ h.to }}</a> undelegated
+              <code>{{ h.quantity }} {{ h.symbol }}</code> from
+              <a :href="`/@${h.from}`">@{{ h.from }}</a>
+            </template>
+
             <template v-else-if="h.operation === 'tokens_delegate'">
               <a :href="`/@${h.from}`">@{{ h.from }}</a> delegated
               <code>{{ h.quantity }} {{ h.symbol }}</code> to
