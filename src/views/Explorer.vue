@@ -52,7 +52,7 @@
                 Number(h.quantityLocked) / Number(h.price)
                 : Number(h.quantityLocked) }} {{ h.symbol }}
               </code> at
-              <code>{{ h.price }} STEEMP/{{ h.symbol }}</code>
+              <code>{{ h.price }} SWAP.HIVE/{{ h.symbol }}</code>
             </template>
 
             <template v-else-if="h.operation === 'market_buy'">
@@ -69,7 +69,7 @@
 
             <template v-else-if="h.operation === 'market_close'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> market returned
-              <code>{{ h.quantityUnlocked }} STEEMP</code>
+              <code>{{ h.quantityUnlocked }} SWAP.HIVE</code>
             </template>
 
             <template v-else-if="h.operation === 'market_closeOrder'">
