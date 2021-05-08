@@ -3,7 +3,7 @@
     <h2 class="mb-3">@{{ username }}</h2>
 
     <div class="history" v-if="dataLoaded">
-      <div class="card mb-2" v-for="(h,i) in history" :key="i">
+      <div class="card mb-2" v-for="(h, i) in history" :key="i">
         <div class="card-body p-1">
           <div class="card-text">
             <template v-if="h.operation === 'tokens_transfer'">
@@ -15,7 +15,7 @@
 
             <template v-else-if="h.operation === 'tokens_stake'">
               <a :href="`/@${h.from}`">@{{ h.from }}</a> staked
-              <code>{{ h.quantity }} {{h.symbol}}</code> to
+              <code>{{ h.quantity }} {{ h.symbol }}</code> to
               <a :href="`/@${h.to}`">@{{ h.to }}</a>
               <code>{{ h.memo }}</code>
             </template>
@@ -50,15 +50,27 @@
               <code>{{ h.memo }}</code>
             </template>
 
+            <template v-else-if="h.operation === 'tokens_transferOwnership'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> transferred
+              <code>{{ h.symbol }}</code> ownership to
+              <a :href="`/@${h.newOwner}`">@{{ h.newOwner }}</a>
+            </template>
+
             <template v-else-if="h.operation === 'market_placeOrder'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> placed a
               <code>{{ h.orderType }} order</code> of
               <code>
-                {{ h.orderType === 'buy' ?
-                Number(h.quantityLocked) / Number(h.price)
-                : Number(h.quantityLocked) }} {{ h.symbol }}
-              </code> at
+                {{
+                  h.orderType === "buy"
+                    ? Number(h.quantityLocked) / Number(h.price)
+                    : Number(h.quantityLocked)
+                }}
+                {{ h.symbol }}
+              </code>
+              <template v-if="h.price">
+              at
               <code>{{ h.price }} SWAP.HIVE/{{ h.symbol }}</code>
+              </template>
             </template>
 
             <template v-else-if="h.operation === 'market_buy'">
@@ -80,14 +92,15 @@
 
             <template v-else-if="h.operation === 'market_closeOrder'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a>
-              {{h.orderType}} order has closed.
-              <code>ID: {{h.orderID}}</code>
+              {{ h.orderType }} order has closed.
+              <code>ID: {{ h.orderID }}</code>
             </template>
 
             <template v-else-if="h.operation === 'market_cancel'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a>
               cancelled a {{ h.orderType }} order of
-              <code>{{ h.quantityReturned }} {{ h.symbol }}</code>.
+              <code>{{ h.quantityReturned }} {{ h.symbol }}</code
+              >.
               <code>ID: {{ h.orderID }}</code>
             </template>
 
@@ -105,18 +118,27 @@
               <code>{{ h.quantity }} {{ h.symbol }}.</code>
             </template>
 
+            <template v-else-if="h.operation === 'mining_lottery'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
+              <code>{{ h.quantity }} {{ h.symbol }}</code> mining reward.
+            </template>
+
             <router-link
               :to="{ name: 'block', params: { block: h.blockNumber } }"
               class="small"
               :title="new Date(h.timestamp * 1000).toGMTString()"
             >
-              <timeago :datetime="new Date(h.timestamp * 1000)" :auto-update="60"></timeago>
+              <timeago
+                :datetime="new Date(h.timestamp * 1000)"
+                :auto-update="60"
+              ></timeago>
             </router-link>
 
             <router-link
               :to="{ name: 'transaction', params: { txid: h.transactionId } }"
               class="small text-muted float-right"
-            >{{ h.transactionId.substr(0,8) }}</router-link>
+              >{{ h.transactionId.substr(0, 8) }}</router-link
+            >
           </div>
         </div>
       </div>
@@ -132,10 +154,14 @@
             :disabled="page <= 1"
             @click.prevent="getPrevPage()"
             id="prev"
-          >Previous</button>
+          >
+            Previous
+          </button>
         </li>
         <li class="page-item">
-          <button class="page-link" @click.prevent="getNextPage()" id="next">Next</button>
+          <button class="page-link" @click.prevent="getNextPage()" id="next">
+            Next
+          </button>
         </li>
       </ul>
     </nav>
@@ -163,7 +189,11 @@ export default {
     this.loader = this.$loading.show();
     this.username = this.$route.params.username;
     this.symbol = this.$route.query.symbol || null;
-    this.page = (this.$route.query.page && this.$route.query.page > 1) ? this.$route.query.page : 1;
+    this.page = Number(
+      this.$route.query.page && this.$route.query.page > 1
+        ? this.$route.query.page
+        : 1,
+    );
 
     const offset = (this.page - 1) * this.limit;
 
@@ -183,7 +213,12 @@ export default {
 
       if (this.symbol) params.symbol = this.symbol;
 
-      const { data } = await axios.get('https://accounts.hive-engine.com/accountHistory', { params });
+      const { data } = await axios.get(
+        'https://accounts.hive-engine.com/accountHistory',
+        {
+          params,
+        },
+      );
 
       this.history = data;
 
@@ -196,16 +231,24 @@ export default {
       const query = { page: this.page };
       if (this.symbol) query.symbol = this.symbol;
 
-      this.$router.push({ name: 'explorer', params: { username: this.username }, query });
+      this.$router.push({
+        name: 'explorer',
+        params: { username: this.username },
+        query,
+      });
     },
 
     getPrevPage() {
-      this.page = (this.page > 1) ? this.page - 1 : 1;
+      this.page = this.page > 1 ? this.page - 1 : 1;
 
       const query = { page: this.page };
       if (this.symbol) query.symbol = this.symbol;
 
-      this.$router.push({ name: 'explorer', params: { username: this.username }, query });
+      this.$router.push({
+        name: 'explorer',
+        params: { username: this.username },
+        query,
+      });
     },
   },
   watch: {
