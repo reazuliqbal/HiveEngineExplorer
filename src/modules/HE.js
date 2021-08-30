@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-const nodes = JSON.parse(localStorage.getItem('nodes'));
-
+let nodes = JSON.parse(localStorage.getItem('nodes'));
+if (!nodes) {
+  nodes = { hiveEngineRPC: 'https://api.hive-engine.com/rpc', historyAPI: 'https://accounts.hive-engine.com/accountHistory' };
+}
 const HE_RPC = nodes.hiveEngineRPC;
 
 const call = async (endpoint, request) => {

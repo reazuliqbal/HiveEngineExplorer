@@ -27,7 +27,7 @@ export default {
     this.txid = this.$route.params.txid || null;
 
     const transaction = await HE.getTransactionInfo(this.txid);
-
+    console.log(transaction);
     if (transaction.payload) transaction.payload = JSON.parse(transaction.payload);
     if (transaction.logs) transaction.logs = JSON.parse(transaction.logs);
 
