@@ -4,7 +4,7 @@ import VueTimeago from 'vue-timeago';
 import {
   ButtonPlugin, NavbarPlugin, FormInputPlugin,
   PaginationPlugin, TablePlugin, LayoutPlugin,
-  FormPlugin,
+  FormPlugin, ModalPlugin,
 } from 'bootstrap-vue';
 import App from './App.vue';
 import router from './router';
@@ -22,6 +22,7 @@ Vue.use(PaginationPlugin);
 Vue.use(TablePlugin);
 Vue.use(LayoutPlugin);
 Vue.use(FormPlugin);
+Vue.use(ModalPlugin);
 Vue.use(VueTimeago, {
   name: 'Timeago',
   locale: 'en',

@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const HE_RPC = 'https://api.hive-engine.com/rpc';
+const nodes = JSON.parse(localStorage.getItem('nodes'));
+
+const HE_RPC = nodes.hiveEngineRPC;
 
 const call = async (endpoint, request) => {
   const postData = {
