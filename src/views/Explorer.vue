@@ -212,9 +212,10 @@ export default {
       };
 
       if (this.symbol) params.symbol = this.symbol;
-
+      const nodes = JSON.parse(localStorage.getItem('nodes'));
+      const { historyAPI } = nodes;
       const { data } = await axios.get(
-        'https://accounts.hive-engine.com/accountHistory',
+        historyAPI,
         {
           params,
         },
