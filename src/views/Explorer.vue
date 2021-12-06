@@ -123,6 +123,17 @@
               <code>{{ h.quantity }} {{ h.symbol }}</code> mining reward.
             </template>
 
+            <template v-else-if="['nft_issue', 'nft_issueMultiple'].includes(h.operation)">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> has issued
+               <code>{{h.symbol}} #{{h.nft}}</code> to <a :href="`/@${h.to}`">@{{ h.to }}</a>.
+                Properties: <code>{{JSON.stringify(h.properties)}}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'nft_transferFee'">
+              <a :href="`/@${h.from}`">@{{ h.from }}</a> has paid
+               <code>{{Number(h.quantity)}} {{h.symbol}}</code> issuance fee.
+            </template>
+
             <router-link
               :to="{ name: 'block', params: { block: h.blockNumber } }"
               class="small"
