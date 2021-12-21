@@ -68,8 +68,8 @@
                 {{ h.symbol }}
               </code>
               <template v-if="h.price">
-              at
-              <code>{{ h.price }} SWAP.HIVE/{{ h.symbol }}</code>
+                at
+                <code>{{ h.price }} SWAP.HIVE/{{ h.symbol }}</code>
               </template>
             </template>
 
@@ -99,8 +99,7 @@
             <template v-else-if="h.operation === 'market_cancel'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a>
               cancelled a {{ h.orderType }} order of
-              <code>{{ h.quantityReturned }} {{ h.symbol }}</code
-              >.
+              <code>{{ h.quantityReturned }} {{ h.symbol }}</code>.
               <code>ID: {{ h.orderID }}</code>
             </template>
 
@@ -124,32 +123,81 @@
             </template>
 
             <template v-else-if="['nft_issue', 'nft_issueMultiple'].includes(h.operation)">
-              <a :href="`/@${h.account}`">@{{ h.account }}</a> has issued
-               <code>{{h.symbol}} #{{h.nft}}</code> to <a :href="`/@${h.to}`">@{{ h.to }}</a>.
-                Properties: <code>{{JSON.stringify(h.properties)}}</code>
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> issued
+              <code>{{ h.symbol }} #{{ h.nft }}</code> to
+              <a :href="`/@${h.to}`">@{{ h.to }}</a>.
+              Properties:
+              <code>{{ JSON.stringify(h.properties) }}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'nft_transfer'">
+              <a :href="`/@${h.from}`">@{{ h.from }}</a> transferred
+              <code>{{ h.symbol }} #{{ h.nft }}</code> to
+              <a :href="`/@${h.to}`">@{{ h.to }}</a>
             </template>
 
             <template v-else-if="h.operation === 'nft_transferFee'">
-              <a :href="`/@${h.from}`">@{{ h.from }}</a> has paid
-               <code>{{Number(h.quantity)}} {{h.symbol}}</code> issuance fee.
+              <a :href="`/@${h.from}`">@{{ h.from }}</a> paid
+              <code>{{ Number(h.quantity) }} {{ h.symbol }}</code> issuance fee.
+            </template>
+
+            <template v-else-if="h.operation === 'nft_setProperties'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> set nft properties to
+              <code v-for="(nft, i) of h.nfts" :key="i">
+                <span>{{ h.symbol }} #{{ nft.id }}</span>
+              </code>
+            </template>
+
+            <template v-else-if="h.operation === 'nftmarket_transferFee'">
+              <a :href="`/@${h.from}`">@{{ h.from }}</a> paid
+              <code>{{ Number(h.quantity) }} {{ h.symbol }}</code> nft market fee to
+              <a :href="`/@${h.to}`">@{{ h.to }}</a>.
+            </template>
+
+            <template v-else-if="h.operation === 'nftmarket_buy'">
+              <template v-if="h.nfts && h.nfts.length > 0">
+                <a :href="`/@${h.account}`">@{{ h.account }}</a> bought
+                <code v-for="(nft, i) of h.nfts" :key="i">
+                  <span>{{ h.symbol }} #{{ nft }}</span>
+                </code> from
+                <a :href="`/@${h.from}`">@{{ h.from }}</a> for
+                <code>{{ Number(h.price) }} {{ h.priceSymbol }}</code>.
+              </template>
+
+              <template v-else>
+                <a :href="`/@${h.from}`">@{{ h.from }}</a> paid
+                <code>{{ Number(h.quantity) }} {{ h.symbol }}</code> nft market agent fee to
+                <a :href="`/@${h.to}`">@{{ h.to }}</a>.
+              </template>
+            </template>
+
+            <template v-else-if="h.operation === 'nftmarket_sellOrder'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> placed
+              <code>{{ h.symbol }} #{{ h.nft }}</code> for sale for
+              <code>{{ h.price }} {{ h.priceSymbol }}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'nftmarket_changePrice'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> changed
+              <code>{{ h.symbol }} #{{ h.nft }}</code> price from
+              <code>{{ h.oldPrice }} {{ h.priceSymbol }}</code> to
+              <code>{{ h.newPrice }} {{ h.priceSymbol }}</code>
             </template>
 
             <router-link
               :to="{ name: 'block', params: { block: h.blockNumber } }"
               class="small"
+              style="user-select: none;"
               :title="new Date(h.timestamp * 1000).toGMTString()"
             >
-              <timeago
-                :datetime="new Date(h.timestamp * 1000)"
-                :auto-update="60"
-              ></timeago>
+              <timeago :datetime="new Date(h.timestamp * 1000)" :auto-update="60"></timeago>
             </router-link>
 
             <router-link
               :to="{ name: 'transaction', params: { txid: h.transactionId } }"
               class="small text-muted float-right"
-              >{{ h.transactionId.substr(0, 8) }}</router-link
-            >
+              style="user-select: none;"
+            >{{ h.transactionId.substr(0, 8) }}</router-link>
           </div>
         </div>
       </div>
@@ -165,14 +213,10 @@
             :disabled="page <= 1"
             @click.prevent="getPrevPage()"
             id="prev"
-          >
-            Previous
-          </button>
+          >Previous</button>
         </li>
         <li class="page-item">
-          <button class="page-link" @click.prevent="getNextPage()" id="next">
-            Next
-          </button>
+          <button class="page-link" @click.prevent="getNextPage()" id="next">Next</button>
         </li>
       </ul>
     </nav>
