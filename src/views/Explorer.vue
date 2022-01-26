@@ -109,17 +109,17 @@
 
             <template v-else-if="h.operation === 'hivepegged_buy'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> deposited
-              <code>{{ h.quantity }} {{ h.symbol }}.</code>
+              <code>{{ h.quantity }} {{ h.symbol }}</code>
             </template>
 
             <template v-else-if="h.operation === 'hivepegged_withdraw'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> withdrawn
-              <code>{{ h.quantity }} {{ h.symbol }}.</code>
+              <code>{{ h.quantity }} {{ h.symbol }}</code>
             </template>
 
             <template v-else-if="h.operation === 'mining_lottery'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
-              <code>{{ h.quantity }} {{ h.symbol }}</code> mining reward.
+              <code>{{ h.quantity }} {{ h.symbol }}</code> mining reward
             </template>
 
             <template v-else-if="['nft_issue', 'nft_issueMultiple'].includes(h.operation)">
@@ -138,7 +138,7 @@
 
             <template v-else-if="h.operation === 'nft_transferFee'">
               <a :href="`/@${h.from}`">@{{ h.from }}</a> paid
-              <code>{{ Number(h.quantity) }} {{ h.symbol }}</code> issuance fee.
+              <code>{{ Number(h.quantity) }} {{ h.symbol }}</code> issuance fee
             </template>
 
             <template v-else-if="h.operation === 'nft_setProperties'">
@@ -151,7 +151,7 @@
             <template v-else-if="h.operation === 'nftmarket_transferFee'">
               <a :href="`/@${h.from}`">@{{ h.from }}</a> paid
               <code>{{ Number(h.quantity) }} {{ h.symbol }}</code> nft market fee to
-              <a :href="`/@${h.to}`">@{{ h.to }}</a>.
+              <a :href="`/@${h.to}`">@{{ h.to }}</a>
             </template>
 
             <template v-else-if="h.operation === 'nftmarket_buy'">
@@ -161,13 +161,13 @@
                   <span>{{ h.symbol }} #{{ nft }}</span>
                 </code> from
                 <a :href="`/@${h.from}`">@{{ h.from }}</a> for
-                <code>{{ Number(h.price) }} {{ h.priceSymbol }}</code>.
+                <code>{{ Number(h.price) }} {{ h.priceSymbol }}</code>
               </template>
 
               <template v-else>
                 <a :href="`/@${h.from}`">@{{ h.from }}</a> paid
                 <code>{{ Number(h.quantity) }} {{ h.symbol }}</code> nft market agent fee to
-                <a :href="`/@${h.to}`">@{{ h.to }}</a>.
+                <a :href="`/@${h.to}`">@{{ h.to }}</a>
               </template>
             </template>
 
@@ -182,6 +182,53 @@
               <code>{{ h.symbol }} #{{ h.nft }}</code> price from
               <code>{{ h.oldPrice }} {{ h.priceSymbol }}</code> to
               <code>{{ h.newPrice }} {{ h.priceSymbol }}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'comments_authorReward'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
+              <code>{{ h.quantity }} {{ h.symbol }}</code> author reward for
+               <code>{{h.authorperm}}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'comments_authorReward_stake'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
+              <code>{{ h.quantity }} {{ h.symbol }}</code> author staked reward for
+               <code>{{h.authorperm}}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'comments_curationReward'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
+              <code>{{ h.quantity }} {{ h.symbol }}</code> curation reward for
+               <code>{{h.authorperm}}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'comments_curationReward_stake'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
+              <code>{{ h.quantity }} {{ h.symbol }}</code> curation staked reward for
+               <code>{{h.authorperm}}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'marketpools_swapTokens'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> swapped for
+              <code>{{ h.quantity }} {{ h.symbol }}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'witnesses_proposeRound'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
+              <code>{{ h.quantity }} {{ h.symbol }}</code> witness reward
+               <code>{{h.authorperm}}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'inflation_issueNewTokens'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> been issued
+              <code>{{ h.quantity }} {{ h.symbol }}</code>
+               <code>{{h.authorperm}}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'distribution_checkPendingDistributions'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> received
+              <code>{{ h.quantity }} {{ h.symbol }}</code> distribution reward
+               <code>{{h.authorperm}}</code>
             </template>
 
             <router-link
