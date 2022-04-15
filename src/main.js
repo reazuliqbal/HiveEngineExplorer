@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Loading from 'vue-loading-overlay';
 import VueTimeago from 'vue-timeago';
 import {
-  ButtonPlugin, NavbarPlugin, FormInputPlugin,
+  ButtonPlugin, NavbarPlugin, FormGroupPlugin, FormInputPlugin,
   PaginationPlugin, TablePlugin, LayoutPlugin,
   FormPlugin, ModalPlugin,
 } from 'bootstrap-vue';
@@ -17,6 +17,7 @@ import './styles/app.scss';
 
 Vue.use(ButtonPlugin);
 Vue.use(NavbarPlugin);
+Vue.use(FormGroupPlugin);
 Vue.use(FormInputPlugin);
 Vue.use(PaginationPlugin);
 Vue.use(TablePlugin);

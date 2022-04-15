@@ -1,9 +1,18 @@
 <template>
   <div class="container-fluid pt-3 pb-3">
-    <h2 class="mb-3">@{{ username }}</h2>
+    <h2 class="mb-3">
+      @{{ username }}
+    </h2>
 
-    <div class="history" v-if="dataLoaded">
-      <div class="card mb-2" v-for="(h, i) in history" :key="i">
+    <div
+      v-if="dataLoaded"
+      class="history"
+    >
+      <div
+        v-for="(h, i) in history"
+        :key="i"
+        class="card mb-2"
+      >
         <div class="card-body p-1">
           <div class="card-text">
             <template v-if="h.operation === 'tokens_transfer'">
@@ -27,6 +36,11 @@
 
             <template v-else-if="h.operation === 'tokens_unstakeStart'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> started unstaking
+              <code>{{ h.quantity }} {{ h.symbol }}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'tokens_unstakeDone'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> unstaked
               <code>{{ h.quantity }} {{ h.symbol }}</code>
             </template>
 
@@ -136,6 +150,16 @@
               <a :href="`/@${h.to}`">@{{ h.to }}</a>
             </template>
 
+            <template v-else-if="h.operation === 'nft_delegate'">
+              <a :href="`/@${h.from}`">@{{ h.from }}</a> delegated
+              <code>{{ h.symbol }} #{{ h.nft }}</code> to
+              <span v-if="h.to === 'contract_mining'">the Mining Contract</span>
+              <a
+                v-else
+                :href="`/@${h.to}`"
+              >@{{ h.to }}</a>
+            </template>
+
             <template v-else-if="h.operation === 'nft_transferFee'">
               <a :href="`/@${h.from}`">@{{ h.from }}</a> paid
               <code>{{ Number(h.quantity) }} {{ h.symbol }}</code> issuance fee
@@ -143,7 +167,10 @@
 
             <template v-else-if="h.operation === 'nft_setProperties'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> set nft properties to
-              <code v-for="(nft, i) of h.nfts" :key="i">
+              <code
+                v-for="(nft, nftk) of h.nfts"
+                :key="nftk"
+              >
                 <span>{{ h.symbol }} #{{ nft.id }}</span>
               </code>
             </template>
@@ -157,7 +184,10 @@
             <template v-else-if="h.operation === 'nftmarket_buy'">
               <template v-if="h.nfts && h.nfts.length > 0">
                 <a :href="`/@${h.account}`">@{{ h.account }}</a> bought
-                <code v-for="(nft, i) of h.nfts" :key="i">
+                <code
+                  v-for="(nft, nfti) of h.nfts"
+                  :key="nfti"
+                >
                   <span>{{ h.symbol }} #{{ nft }}</span>
                 </code> from
                 <a :href="`/@${h.from}`">@{{ h.from }}</a> for
@@ -187,25 +217,25 @@
             <template v-else-if="h.operation === 'comments_authorReward'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
               <code>{{ h.quantity }} {{ h.symbol }}</code> author reward for
-               <code>{{h.authorperm}}</code>
+              <code>{{ h.authorperm }}</code>
             </template>
 
             <template v-else-if="h.operation === 'comments_authorReward_stake'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
               <code>{{ h.quantity }} {{ h.symbol }}</code> author staked reward for
-               <code>{{h.authorperm}}</code>
+              <code>{{ h.authorperm }}</code>
             </template>
 
             <template v-else-if="h.operation === 'comments_curationReward'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
               <code>{{ h.quantity }} {{ h.symbol }}</code> curation reward for
-               <code>{{h.authorperm}}</code>
+              <code>{{ h.authorperm }}</code>
             </template>
 
             <template v-else-if="h.operation === 'comments_curationReward_stake'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
               <code>{{ h.quantity }} {{ h.symbol }}</code> curation staked reward for
-               <code>{{h.authorperm}}</code>
+              <code>{{ h.authorperm }}</code>
             </template>
 
             <template v-else-if="h.operation === 'marketpools_swapTokens'">
@@ -216,19 +246,19 @@
             <template v-else-if="h.operation === 'witnesses_proposeRound'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
               <code>{{ h.quantity }} {{ h.symbol }}</code> witness reward
-               <code>{{h.authorperm}}</code>
+              <code>{{ h.authorperm }}</code>
             </template>
 
             <template v-else-if="h.operation === 'inflation_issueNewTokens'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> been issued
               <code>{{ h.quantity }} {{ h.symbol }}</code>
-               <code>{{h.authorperm}}</code>
+              <code>{{ h.authorperm }}</code>
             </template>
 
             <template v-else-if="h.operation === 'distribution_checkPendingDistributions'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> received
               <code>{{ h.quantity }} {{ h.symbol }}</code> distribution reward
-               <code>{{h.authorperm}}</code>
+              <code>{{ h.authorperm }}</code>
             </template>
 
             <router-link
@@ -237,33 +267,51 @@
               style="user-select: none;"
               :title="new Date(h.timestamp * 1000).toGMTString()"
             >
-              <timeago :datetime="new Date(h.timestamp * 1000)" :auto-update="60"></timeago>
+              <timeago
+                :datetime="new Date(h.timestamp * 1000)"
+                :auto-update="60"
+              />
             </router-link>
 
             <router-link
               :to="{ name: 'transaction', params: { txid: h.transactionId } }"
               class="small text-muted float-right"
               style="user-select: none;"
-            >{{ h.transactionId.substr(0, 8) }}</router-link>
+            >
+              {{ h.transactionId.substr(0, 8) }}
+            </router-link>
           </div>
         </div>
       </div>
 
-      <div v-if="history.length === 0">No history found.</div>
+      <div v-if="history.length === 0">
+        No history found.
+      </div>
     </div>
 
-    <nav class="mt-3" v-if="history.length >= limit">
+    <nav
+      v-if="history.length >= limit"
+      class="mt-3"
+    >
       <ul class="pagination justify-content-center">
         <li class="page-item">
           <button
+            id="prev"
             class="page-link"
             :disabled="page <= 1"
             @click.prevent="getPrevPage()"
-            id="prev"
-          >Previous</button>
+          >
+            Previous
+          </button>
         </li>
         <li class="page-item">
-          <button class="page-link" @click.prevent="getNextPage()" id="next">Next</button>
+          <button
+            id="next"
+            class="page-link"
+            @click.prevent="getNextPage()"
+          >
+            Next
+          </button>
         </li>
       </ul>
     </nav>
@@ -286,6 +334,11 @@ export default {
       dataLoaded: false,
       loader: null,
     };
+  },
+  watch: {
+    dataLoaded(loaded) {
+      if (loaded) this.loader.hide();
+    },
   },
   async created() {
     this.loader = this.$loading.show();
@@ -352,11 +405,6 @@ export default {
         params: { username: this.username },
         query,
       });
-    },
-  },
-  watch: {
-    dataLoaded(loaded) {
-      if (loaded) this.loader.hide();
     },
   },
 };

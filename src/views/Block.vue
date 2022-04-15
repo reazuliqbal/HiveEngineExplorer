@@ -1,7 +1,15 @@
 <template>
   <div class="container-fluid pt-3 pb-3">
-    <div class="transaction" v-if="dataLoaded">
-      <json-viewer :value="transactions" :expand-depth="5" copyable sort></json-viewer>
+    <div
+      v-if="dataLoaded"
+      class="transaction"
+    >
+      <json-viewer
+        :value="transactions"
+        :expand-depth="5"
+        copyable
+        sort
+      />
     </div>
   </div>
 </template>
@@ -21,6 +29,11 @@ export default {
       loader: null,
     };
   },
+  watch: {
+    dataLoaded(loaded) {
+      if (loaded) this.loader.hide();
+    },
+  },
   async created() {
     this.loader = this.$loading.show();
 
@@ -31,11 +44,6 @@ export default {
     this.transactions = transactions;
 
     this.dataLoaded = true;
-  },
-  watch: {
-    dataLoaded(loaded) {
-      if (loaded) this.loader.hide();
-    },
   },
 };
 </script>
