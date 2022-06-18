@@ -368,7 +368,9 @@ export default {
 
       if (this.symbol) params.symbol = this.symbol;
       const nodes = JSON.parse(localStorage.getItem('nodes'));
-      const { historyAPI } = nodes;
+
+      const historyAPI = nodes?.historyAPI || 'https://enginehistory.rishipanthee.com/accountHistory';
+
       const { data } = await axios.get(
         historyAPI,
         {
