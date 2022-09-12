@@ -249,6 +249,12 @@
               <code>{{ h.authorperm }}</code>
             </template>
 
+            <template v-else-if="h.operation === 'witnesses_proposeRound_stake'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
+              <code>{{ h.quantity }} {{ h.symbol }}</code> witness reward
+              <code>{{ h.authorperm }}</code>
+            </template>
+
             <template v-else-if="h.operation === 'inflation_issueNewTokens'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> been issued
               <code>{{ h.quantity }} {{ h.symbol }}</code>
@@ -259,6 +265,22 @@
               <a :href="`/@${h.account}`">@{{ h.account }}</a> received
               <code>{{ h.quantity }} {{ h.symbol }}</code> distribution reward
               <code>{{ h.authorperm }}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'claimdrops_create'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> created an claimdrop for
+              <code>{{ h.quantity }} {{ h.symbol }}</code> ID:
+              <code>{{ h.transactionId }}</code>
+            </template>
+
+            <template v-else-if="h.operation === 'airdrops_checkPendingAirdrops'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> has been airdropped
+              <code>{{ h.quantity }} {{ h.symbol }}</code> staked.
+            </template>
+
+            <template v-else-if="h.operation === 'airdrops_checkPendingAirdrops_stake'">
+              <a :href="`/@${h.account}`">@{{ h.account }}</a> has been airdropped
+              <code>{{ h.quantity }} {{ h.symbol }}</code> staked.
             </template>
 
             <router-link
