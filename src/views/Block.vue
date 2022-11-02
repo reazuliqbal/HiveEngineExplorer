@@ -5,7 +5,7 @@
       class="transaction"
     >
       <json-viewer
-        :value="transactions"
+        :value="block"
         :expand-depth="5"
         copyable
         sort
@@ -16,6 +16,7 @@
 
 <script>
 import JsonViewer from 'vue-json-viewer';
+import { parseJSON } from '../helpers';
 import HE from '../modules/HE';
 
 export default {
@@ -23,8 +24,8 @@ export default {
   components: { JsonViewer },
   data() {
     return {
-      block: 0,
-      transactions: [],
+      blockNum: 0,
+      block: [],
       dataLoaded: false,
       loader: null,
     };
@@ -37,11 +38,23 @@ export default {
   async created() {
     this.loader = this.$loading.show();
 
-    this.block = this.$route.params.block;
+    this.blockNum = this.$route.params.block;
 
-    const transactions = await HE.getBlockInfo(this.block);
+    const block = await HE.getBlockInfo(this.blockNum);
 
-    this.transactions = transactions;
+    this.block = {
+      ...block,
+      transactions: block.transactions.map((t) => ({
+        ...t,
+        logs: parseJSON(t.logs),
+        payload: parseJSON(t.payload),
+      })),
+      virtualTransactions: block.virtualTransactions.map((t) => ({
+        ...t,
+        logs: parseJSON(t.logs),
+        payload: parseJSON(t.payload),
+      })),
+    };
 
     this.dataLoaded = true;
   },

@@ -24,6 +24,7 @@
 import axios from 'axios';
 import JsonViewer from 'vue-json-viewer';
 import HE from '../modules/HE';
+import { parseJSON } from '../helpers';
 
 export default {
   name: 'Transaction',
@@ -80,7 +81,7 @@ export default {
           const vt = heBlockData.virtualTransactions.find((t) => t.transactionId === txid);
 
           if (vt.logs) {
-            vt.logs = JSON.parse(vt.logs);
+            vt.logs = parseJSON(vt.logs);
           }
 
           const trxResponse = {
@@ -95,8 +96,8 @@ export default {
       const transaction = await HE.getTransactionInfo(txid);
 
       if (transaction) {
-        if (transaction.payload) transaction.payload = JSON.parse(transaction.payload);
-        if (transaction.logs) transaction.logs = JSON.parse(transaction.logs);
+        if (transaction.payload) transaction.payload = parseJSON(transaction.payload);
+        if (transaction.logs) transaction.logs = parseJSON(transaction.logs);
 
         this.transaction = transaction;
       }
