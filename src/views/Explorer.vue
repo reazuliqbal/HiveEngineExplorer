@@ -138,9 +138,8 @@
 
             <template v-else-if="['nft_issue', 'nft_issueMultiple'].includes(h.operation)">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> issued
-              <code>{{ h.symbol }} #{{ h.nft }}</code> to
-              <a :href="`/@${h.to}`">@{{ h.to }}</a>.
-              Properties:
+              <code>{{ h.symbol }} #{{ h.nft }}</code>
+              to <a :href="`/@${h.to}`">@{{ h.to }}</a>. Properties:
               <code>{{ JSON.stringify(h.properties) }}</code>
             </template>
 
@@ -189,8 +188,8 @@
                   :key="nfti"
                 >
                   <span>{{ h.symbol }} #{{ nft }}</span>
-                </code> from
-                <a :href="`/@${h.from}`">@{{ h.from }}</a> for
+                </code>
+                from <a :href="`/@${h.from}`">@{{ h.from }}</a> for
                 <code>{{ Number(h.price) }} {{ h.priceSymbol }}</code>
               </template>
 
@@ -235,6 +234,13 @@
             <template v-else-if="h.operation === 'comments_curationReward_stake'">
               <a :href="`/@${h.account}`">@{{ h.account }}</a> earned
               <code>{{ h.quantity }} {{ h.symbol }}</code> curation staked reward for
+              <code>{{ h.authorperm }}</code>
+            </template>
+
+            <template v-if="h.operation === 'comments_appTax'">
+              Comments contract transferred app tax
+              <code>{{ h.quantity }} {{ h.symbol }}</code> to
+              <a :href="`/@${h.to}`">@{{ h.to }}</a>
               <code>{{ h.authorperm }}</code>
             </template>
 
@@ -367,9 +373,7 @@ export default {
     this.username = this.$route.params.username;
     this.symbol = this.$route.query.symbol || null;
     this.page = Number(
-      this.$route.query.page && this.$route.query.page > 1
-        ? this.$route.query.page
-        : 1,
+      this.$route.query.page && this.$route.query.page > 1 ? this.$route.query.page : 1,
     );
 
     const offset = (this.page - 1) * this.limit;
@@ -393,12 +397,9 @@ export default {
 
       const historyAPI = nodes?.historyAPI || 'https://enginehistory.rishipanthee.com/accountHistory';
 
-      const { data } = await axios.get(
-        historyAPI,
-        {
-          params,
-        },
-      );
+      const { data } = await axios.get(historyAPI, {
+        params,
+      });
 
       this.history = data;
 
