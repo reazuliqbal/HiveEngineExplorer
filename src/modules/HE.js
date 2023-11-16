@@ -2,7 +2,7 @@ import axios from 'axios';
 
 let nodes = JSON.parse(localStorage.getItem('nodes'));
 if (!nodes) {
-  nodes = { hiveEngineRPC: 'https://api.hive-engine.com/rpc', historyAPI: 'https://accounts.hive-engine.com/accountHistory' };
+  nodes = { hiveEngineRPC: 'https://enginerpc.com', historyAPI: 'https://accounts.hive-engine.com/accountHistory' };
 }
 const HE_RPC = nodes.hiveEngineRPC;
 

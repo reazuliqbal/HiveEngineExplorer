@@ -24,6 +24,7 @@
               aria-label="Account"
               trim
               @input="account = $event.toLowerCase()"
+              @keyup.enter.native="getAccountHistory"
             />
             <b-form-input
               v-model="symbol"
@@ -33,6 +34,7 @@
               aria-label="Token"
               trim
               @input="symbol = $event.toUpperCase()"
+              @keyup.enter.native="getAccountHistory"
             />
             <b-button
               variant="outline-danger"
@@ -158,10 +160,17 @@ export default {
     },
   },
 
-  created() {
-    this.account = this.$route.params.username || '';
-    this.symbol = this.$route.query.symbol || '';
+  watch: {
+    $route: {
+      immediate: true,
+      handler() {
+        this.account = this.$route.params.username || '';
+        this.symbol = this.$route.query.symbol || '';
+      },
+    },
+  },
 
+  created() {
     let nodes = localStorage.getItem('nodes');
 
     if (nodes) {
@@ -169,7 +178,7 @@ export default {
     }
 
     this.hiveRPC = nodes?.hiveRPC || 'https://api.deathwing.me';
-    this.hiveEngineRPC = nodes?.hiveEngineRPC || 'https://api.hive-engine.com/rpc';
+    this.hiveEngineRPC = nodes?.hiveEngineRPC || 'https://enginerpc.com';
     this.historyAPI = nodes?.historyAPI || 'https://enginehistory.rishipanthee.com/accountHistory';
   },
 

@@ -367,6 +367,12 @@ export default {
     dataLoaded(loaded) {
       if (loaded) this.loader.hide();
     },
+    $route: {
+      immediate: true,
+      handler(to) {
+        document.title = `@${to.params.username} | Hive-Engine Explorer`;
+      },
+    },
   },
   async created() {
     this.loader = this.$loading.show();
