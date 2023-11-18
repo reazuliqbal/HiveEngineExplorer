@@ -64,9 +64,13 @@ const getBlockInfo = (blockNumber) => {
   return callBlockchain(request);
 };
 
-const getTokenHolders = async (symbol, offset = 0, limit = 1000) => {
+const getTokenHolders = async (symbol, lastId = 0, limit = 1000) => {
   const query = {};
   if (symbol) query.symbol = symbol;
+  if (lastId !== 0) {
+    // eslint-disable-next-line no-underscore-dangle
+    query._id = { $gt: lastId };
+  }
 
   const request = {
     method: 'find',
@@ -74,8 +78,8 @@ const getTokenHolders = async (symbol, offset = 0, limit = 1000) => {
       contract: 'tokens',
       table: 'balances',
       query,
-      offset,
       limit,
+      indexes: [{ index: '_id', decending: false }],
     },
   };
 

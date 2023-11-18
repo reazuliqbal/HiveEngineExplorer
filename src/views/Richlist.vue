@@ -157,20 +157,18 @@ export default {
     async loadRichlist(token) {
       this.dataLoaded = false;
 
-      let offset = 0;
-      const query = await HE.getTokenHolders(token, offset);
+      const holders = await HE.getTokenHolders(token);
 
-      offset += 1000;
-      let newHolders = await HE.getTokenHolders(token, offset);
+      // eslint-disable-next-line no-underscore-dangle
+      let newHolders = await HE.getTokenHolders(token, holders.at(-1)._id);
 
-      while (newHolders.length > 0) {
-        query.push(...newHolders);
-        offset += 1000;
-        // eslint-disable-next-line no-await-in-loop
-        newHolders = await HE.getTokenHolders(token, offset);
+      while (newHolders.length > 0 && newHolders.length >= 1000) {
+        holders.push(...newHolders);
+        // eslint-disable-next-line no-await-in-loop, no-underscore-dangle
+        newHolders = await HE.getTokenHolders(token, holders.at(-1)._id);
       }
 
-      this.richlist = query.map((h) => {
+      this.richlist = holders.map((h) => {
         const balance = (h.balance) ? Number(h.balance) : 0;
         const stake = (h.stake) ? Number(h.stake) : 0;
         const pendingUnstake = (h.pendingUnstake) ? Number(h.pendingUnstake) : 0;
@@ -186,7 +184,7 @@ export default {
           pendingUndelegations,
           delegationsIn,
           delegationsOut,
-          total: balance + pendingUnstake + pendingUndelegations
+          total: balance + stake + pendingUnstake + pendingUndelegations
            + delegationsIn - delegationsOut,
         };
       })
