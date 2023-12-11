@@ -21,6 +21,7 @@
               v-model="token"
               name="symbol"
               @input="token = $event.toUpperCase()"
+              @keyup.enter.native="getRichList"
             />
             <b-button
               variant="outline-info"
@@ -86,7 +87,9 @@
 </template>
 
 <script>
+import Big from 'big.js';
 import HE from '../modules/HE';
+import { addCommas } from '../helpers';
 
 export default {
   name: 'Richlist',
@@ -101,22 +104,22 @@ export default {
         { key: 'index', label: '#', sortable: true },
         { key: 'account', label: 'ACCOUNT', sortable: true },
         {
-          key: 'balance', label: 'BALANCE', sortable: true, formatter: (n) => n.toFixed(3),
+          key: 'balance', label: 'BALANCE', sortable: true, formatter: (n) => addCommas(n),
         },
         {
-          key: 'stake', label: 'STAKE', sortable: true, headerTitle: 'Sum of Stake, Delegation Out, and Pending Undelegations', formatter: (n) => n.toFixed(3),
+          key: 'stake', label: 'STAKE', sortable: true, headerTitle: 'Sum of Stake, Delegation Out, and Pending Undelegations', formatter: (n) => addCommas(n),
         },
         {
-          key: 'pendingUnstake', label: 'PENDING UNSTAKE', sortable: true, formatter: (n) => n.toFixed(3),
+          key: 'pendingUnstake', label: 'PENDING UNSTAKE', sortable: true, formatter: (n) => addCommas(n),
         },
         {
-          key: 'delegationsOut', label: 'DELEGATION OUT', sortable: true, formatter: (n) => n.toFixed(3),
+          key: 'delegationsOut', label: 'DELEGATION OUT', sortable: true, formatter: (n) => addCommas(n),
         },
         {
-          key: 'delegationsIn', label: 'DELEGATION IN', sortable: true, formatter: (n) => n.toFixed(3),
+          key: 'delegationsIn', label: 'DELEGATION IN', sortable: true, formatter: (n) => addCommas(n),
         },
         {
-          key: 'total', label: 'TOTAL', sortable: true, headerTitle: 'Sum of Balance, Pending Unstake, Pending Undelegations, and Delegations In, minus the Delegation Out', formatter: (n) => n.toFixed(3),
+          key: 'total', label: 'TOTAL', sortable: true, headerTitle: 'Sum of Balance, Pending Unstake, Pending Undelegations, and Delegations In, minus the Delegation Out', formatter: (n) => addCommas(n),
         },
       ],
       dataLoaded: false,
@@ -157,47 +160,54 @@ export default {
     async loadRichlist(token) {
       this.dataLoaded = false;
 
-      const holders = await HE.getTokenHolders(token);
+      const holders = [];
+      const limit = 1000;
+      let lastId = 0;
+      let newData = 0;
 
-      // eslint-disable-next-line no-underscore-dangle
-      let newHolders = await HE.getTokenHolders(token, holders.at(-1)._id);
+      do {
+        const data = await HE.getTokenHolders(token, lastId, limit);
 
-      while (newHolders.length > 0 && newHolders.length >= 1000) {
-        holders.push(...newHolders);
-        // eslint-disable-next-line no-await-in-loop, no-underscore-dangle
-        newHolders = await HE.getTokenHolders(token, holders.at(-1)._id);
-      }
+        newData = data.length;
+
+        if (newData > 0) {
+          lastId = data.at(-1)._id;
+          holders.push(...data);
+
+          if (data.length < limit) {
+            newData = 0;
+          }
+        }
+      } while (newData > 0);
 
       this.richlist = holders.map((h) => {
-        const balance = (h.balance) ? Number(h.balance) : 0;
-        const stake = (h.stake) ? Number(h.stake) : 0;
-        const pendingUnstake = (h.pendingUnstake) ? Number(h.pendingUnstake) : 0;
-        const pendingUndelegations = (h.pendingUndelegations) ? Number(h.pendingUndelegations) : 0;
-        const delegationsOut = (h.delegationsOut) ? Number(h.delegationsOut) : 0;
-        const delegationsIn = (h.delegationsIn) ? Number(h.delegationsIn) : 0;
+        const balance = new Big(h.balance);
+        const stake = new Big(h.stake);
+        const pendingUnstake = new Big(h.pendingUnstake);
+        const pendingUndelegations = new Big(h.pendingUndelegations);
+        const delegationsOut = new Big(h.delegationsOut);
+        const delegationsIn = new Big(h.delegationsIn);
 
         return {
           account: h.account,
           balance,
-          stake: stake + pendingUndelegations + delegationsOut,
+          stake,
           pendingUnstake,
           pendingUndelegations,
           delegationsIn,
           delegationsOut,
-          total: balance + stake + pendingUnstake + pendingUndelegations
-           + delegationsIn - delegationsOut,
+          total: balance
+            .plus(stake)
+            .plus(pendingUnstake)
+            .plus(pendingUndelegations)
+            .plus(delegationsIn)
+            .minus(delegationsOut),
         };
       })
         .sort((a, b) => parseFloat(b.total) - parseFloat(a.total))
         .map((t, index) => ({
           index,
-          account: t.account,
-          balance: t.balance,
-          stake: t.stake,
-          pendingUnstake: t.pendingUnstake,
-          delegationsOut: t.delegationsOut,
-          delegationsIn: t.delegationsIn,
-          total: t.total,
+          ...t,
         }));
 
       this.dataLoaded = true;

@@ -12,6 +12,9 @@ module.exports = {
   rules: {
     'no-console': 'off',
     'no-debugger': 'off',
+    'max-len': 'off',
+    'no-await-in-loop': 'off',
+    'no-underscore-dangle': 'off'
   },
 
   extends: [
