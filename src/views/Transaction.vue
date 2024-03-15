@@ -1,16 +1,8 @@
 <template>
   <div class="container-fluid pt-3 pb-3">
     <template v-if="dataLoaded">
-      <div
-        v-if="transaction"
-        class="transaction"
-      >
-        <json-viewer
-          :value="transaction"
-          :expand-depth="5"
-          copyable
-          sort
-        />
+      <div v-if="transaction" class="transaction">
+        <json-viewer :value="transaction" :expand-depth="5" copyable sort />
       </div>
 
       <div v-else>
@@ -53,9 +45,9 @@ export default {
 
       const { data } = await axios.post('https://api.hive.blog', {
         jsonrpc: '2.0',
-        id: Date.now(),
+        id: 0,
         method: 'condenser_api.get_block',
-        params: [blockNumber],
+        params: [Number(blockNumber)],
       });
 
       const transactions = data.result.transactions
