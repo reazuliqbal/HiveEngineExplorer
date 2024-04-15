@@ -179,7 +179,7 @@ export default {
 
     this.hiveRPC = nodes?.hiveRPC || 'https://api.deathwing.me';
     this.hiveEngineRPC = nodes?.hiveEngineRPC || 'https://enginerpc.com';
-    this.historyAPI = nodes?.historyAPI || 'https://enginehistory.rishipanthee.com/accountHistory';
+    this.historyAPI = nodes?.historyAPI || 'https://accounts.hive-engine.com/accountHistory';
   },
 
   methods: {
