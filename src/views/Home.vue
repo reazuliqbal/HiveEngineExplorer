@@ -201,12 +201,11 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { useLoading } from 'vue-loading-overlay';
 import HE from '../modules/HE';
 import TimeAgo from '../components/TimeAgo.vue';
+import useAppLoader from '../composables/useAppLoader';
 
-const loading = useLoading();
-const loader = loading.show({ color: 'red' });
+const loader = useAppLoader().show();
 
 const blockNumber = ref(null);
 const timestamp = ref(null);

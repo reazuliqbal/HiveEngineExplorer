@@ -96,15 +96,14 @@ import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Big from 'big.js';
 import { getPaginationRowModel } from '@tanstack/vue-table';
-import { useLoading } from 'vue-loading-overlay';
 import HE from '../modules/HE';
 import { addCommas } from '../helpers';
+import useAppLoader from '../composables/useAppLoader';
 
 const route = useRoute();
 const router = useRouter();
 
-const loading = useLoading();
-const loader = loading.show({ color: 'red' });
+const loader = useAppLoader().show();
 
 const symbol = ref(null);
 const token = ref('');

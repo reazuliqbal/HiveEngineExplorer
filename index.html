@@ -6,6 +6,24 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <link rel="icon" href="/favicon.ico">
   <title>Hive-Engine Explorer</title>
+  <script>
+    // Apply the persisted/system color scheme before the app mounts
+    // to avoid a flash of the wrong theme (mirrors useDark() from @vueuse).
+    (function () {
+      try {
+        var raw = localStorage.getItem('vueuse-color-scheme');
+        if (raw) {
+          try {
+            raw = JSON.parse(raw);
+          } catch (e) { /* stored as a plain string */ }
+        }
+        var dark = raw === 'dark'
+          || ((raw === null || raw === 'auto' || raw === undefined)
+            && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
 </head>
 
 <body>

@@ -13,6 +13,7 @@
       <JsonViewer
         v-else
         :value="block"
+        :theme="isDark ? 'jv-dark' : 'jv-light'"
         :expand-depth="5"
         copyable
         sort
@@ -25,14 +26,14 @@
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { JsonViewer } from 'vue3-json-viewer';
-import { useLoading } from 'vue-loading-overlay';
 import { parseJSON } from '../helpers';
 import HE from '../modules/HE';
+import useAppLoader from '../composables/useAppLoader';
 
 const route = useRoute();
 
-const loading = useLoading();
-const loader = loading.show({ color: 'red' });
+const { isDark, show } = useAppLoader();
+const loader = show();
 
 const blockNum = ref(0);
 const block = ref([]);

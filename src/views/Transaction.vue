@@ -7,6 +7,7 @@
       >
         <JsonViewer
           :value="transaction"
+          :theme="isDark ? 'jv-dark' : 'jv-light'"
           :expand-depth="5"
           copyable
           sort
@@ -25,12 +26,12 @@ import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { JsonViewer } from 'vue3-json-viewer';
-import { useLoading } from 'vue-loading-overlay';
 import HE from '../modules/HE';
 import { parseJSON } from '../helpers';
+import useAppLoader from '../composables/useAppLoader';
 
-const loading = useLoading();
-const loader = loading.show({ color: 'red' });
+const { isDark, show } = useAppLoader();
+const loader = show();
 
 const route = useRoute();
 

@@ -49,6 +49,14 @@
 
       <template #right>
         <UButton
+          :icon="isDark ? 'i-lucide-sun' : 'i-lucide-moon'"
+          color="neutral"
+          variant="ghost"
+          :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+          class="text-neutral-300 hover:text-white hover:bg-neutral-700/50"
+          @click="toggle()"
+        />
+        <UButton
           color="neutral"
           variant="ghost"
           label="Settings"
@@ -106,6 +114,14 @@
             variant="ghost"
             label="Richlist"
             class="justify-start"
+          />
+          <UButton
+            :icon="isDark ? 'i-lucide-sun' : 'i-lucide-moon'"
+            color="neutral"
+            variant="ghost"
+            :label="isDark ? 'Light mode' : 'Dark mode'"
+            class="justify-start"
+            @click="toggle()"
           />
         </div>
       </template>
@@ -199,6 +215,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import useDarkMode from './composables/useDarkMode';
 
 const b64uLookup = {
   '/': '_', _: '/', '+': '-', '-': '+', '=': '.', '.': '=',
@@ -207,6 +224,8 @@ const b64uEncode = (str) => btoa(str).replace(/(\+|\/|=)/g, (m) => b64uLookup[m]
 
 const route = useRoute();
 const router = useRouter();
+
+const { isDark, toggle } = useDarkMode();
 
 const account = ref('');
 const symbol = ref('');

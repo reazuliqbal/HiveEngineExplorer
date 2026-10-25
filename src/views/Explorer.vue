@@ -514,14 +514,13 @@
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
-import { useLoading } from 'vue-loading-overlay';
 import TimeAgo from '../components/TimeAgo.vue';
+import useAppLoader from '../composables/useAppLoader';
 
 const route = useRoute();
 const router = useRouter();
 
-const loading = useLoading();
-const loader = loading.show({ color: 'red' });
+const loader = useAppLoader().show();
 
 const username = ref('');
 const token = ref('');
