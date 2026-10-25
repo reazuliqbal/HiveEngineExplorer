@@ -2,9 +2,9 @@
   <div class="px-3 pt-3 pb-3">
     <template v-if="dataLoaded">
       <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h3 class="mt-0 mb-0 sm:m-0">
+        <h2 class="page-title">
           {{ symbol }} Richlist
-        </h3>
+        </h2>
         <div class="flex items-center gap-2">
           <UInput
             :model-value="token"

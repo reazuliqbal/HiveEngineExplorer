@@ -1,6 +1,6 @@
 <template>
   <div class="px-3 pt-3 pb-3">
-    <h2>
+    <h2 class="page-title mb-4">
       Recent transactions
       <small
         v-if="blockNumber"

@@ -58,6 +58,13 @@ a {
   }
 }
 
+/* Uniform page title (top of every page): same size, same bottom gap */
+.page-title {
+  font-size: 1.75rem;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
 .app-footer {
   margin-top: 30px;
   text-align: center;

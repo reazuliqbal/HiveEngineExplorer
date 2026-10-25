@@ -1,6 +1,6 @@
 <template>
   <div class="px-3 pt-3 pb-3">
-    <h2 class="mb-3">
+    <h2 class="page-title mb-4">
       @{{ username }}
     </h2>
 
