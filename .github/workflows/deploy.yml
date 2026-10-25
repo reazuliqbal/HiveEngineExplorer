@@ -24,8 +24,8 @@ jobs:
       - name: Install 🔧
         run: npm install
 
-      - name: Generate 🏗️
-        run: npm run generate
+      - name: Build 🏗️
+        run: npm run build
         env:
           NODE_ENV: production
 
