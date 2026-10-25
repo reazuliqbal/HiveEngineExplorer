@@ -1,0 +1,42 @@
+name: 'Deploy'
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@master
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+          package-manager-cache: false
+
+      - name: Install 🔧
+        run: npm install
+
+      - name: Generate 🏗️
+        run: npm run generate
+        env:
+          NODE_ENV: production
+
+      - name: Deploy to BunnyCDN 🚀
+        uses: reazuliqbal/bunny-deploy@v0.3.0
+        with:
+          source: 'dist'
+          storageZoneName: '${{ secrets.STORAGE_NAME }}'
+          storagePassword: '${{ secrets.STORAGE_PASSWORD }}'
+          accessKey: '${{ secrets.STORAGE_ACCESS_KEY }}'
+          pullZoneId: '${{ secrets.PULL_ZONE_ID }}'
+          purge: 'true'
+          clean: 'true'
+          deployMode: 'replace'

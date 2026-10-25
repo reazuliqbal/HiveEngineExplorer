@@ -1,223 +1,235 @@
 <template>
-  <div class="container-fluid pt-3 pb-3">
+  <div class="px-3 pt-3 pb-3">
     <template v-if="dataLoaded">
-      <b-row>
-        <b-col
-          sm="6"
-          class="mt-3"
-        >
-          <h3>{{ symbol }} Richlist</h3>
-        </b-col>
-        <b-col
-          sm="6"
-          class="mt-3 d-flex justify-content-sm-end"
-        >
-          <b-form
-            inline
-            class="ml-auto"
-            @submit.prevent
+      <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="page-title">
+          {{ symbol }} Richlist
+        </h2>
+        <div class="flex items-center gap-2">
+          <UInput
+            :model-value="token"
+            name="symbol"
+            placeholder="Token symbol"
+            @update:model-value="token = $event.toUpperCase()"
+            @keyup.enter="getRichList"
+          />
+          <UButton
+            color="primary"
+            variant="outline"
+            :disabled="token.length < 1"
+            @click="getRichList"
           >
-            <b-input
-              v-model="token"
-              name="symbol"
-              @input="token = $event.toUpperCase()"
-              @keyup.enter.native="getRichList"
-            />
-            <b-button
-              variant="outline-info"
-              :disabled="token.length < 1"
-              @click.passive="getRichList"
-            >
-              GO
-            </b-button>
-          </b-form>
-        </b-col>
-      </b-row>
+            GO
+          </UButton>
+        </div>
+      </div>
 
-      <b-table
-        v-if="dataLoaded"
-        id="richlistTable"
-        responsive
-        striped
-        borderless
-        sort-icon-left
-        :items="richlist"
-        :fields="richlistFields"
-        :per-page="perPage"
-        :current-page="currentPage"
-        :caption-top="true"
-        sort-by="total"
-        :sort-desc="true"
-        class="mt-4"
-        show-empty
-      >
-        <template v-slot:empty>
-          <h6>Nothing to show.</h6>
-        </template>
-        <template v-slot:cell(index)="data">
-          {{ data.item.index + 1 }}
-        </template>
-        <template v-slot:cell(account)="data">
-          <a :href="`https://hive.blog/@${data.item.account}`">{{
-            data.item.account
-          }}</a>
-        </template>
-        <template v-slot:cell(delegationsIn)="data">
-          {{
-            data.item.delegationsIn || 0
-          }}
-        </template>
-        <template v-slot:cell(delegationsOut)="data">
-          {{
-            data.item.delegationsOut || 0
-          }}
-        </template>
-      </b-table>
+      <div class="overflow-x-auto">
+        <UTable
+          ref="table"
+          v-model:pagination="pagination"
+          v-model:sorting="sorting"
+          :data="richlist"
+          :columns="columns"
+          :pagination-options="{ getPaginationRowModel: getPaginationRowModel() }"
+          class="mt-4"
+        >
+          <template #empty>
+            <h6 class="text-base font-semibold">
+              {{ failed ? 'Failed to load richlist. Please try again.' : 'Nothing to show.' }}
+            </h6>
+          </template>
 
-      <b-pagination
-        v-if="dataLoaded"
-        v-model="currentPage"
-        :total-rows="rows"
-        :per-page="perPage"
-        aria-controls="tokensTable"
-        align="center"
-      />
+          <template #account-cell="{ row }">
+            <a
+              :href="`https://hive.blog/@${row.original.account}`"
+              class="text-primary"
+            >{{ row.original.account }}</a>
+          </template>
+
+          <template #balance-cell="{ row }">
+            {{ addCommas(row.original.balance.toString()) }}
+          </template>
+
+          <template #stake-header>
+            <span title="Sum of Stake, Delegation Out, and Pending Undelegations">STAKE</span>
+          </template>
+          <template #stake-cell="{ row }">
+            {{ addCommas(row.original.stake.toString()) }}
+          </template>
+
+          <template #pendingUnstake-cell="{ row }">
+            {{ addCommas(row.original.pendingUnstake.toString()) }}
+          </template>
+
+          <template #delegationsOut-cell="{ row }">
+            {{ addCommas(row.original.delegationsOut.toString()) }}
+          </template>
+
+          <template #delegationsIn-cell="{ row }">
+            {{ addCommas(row.original.delegationsIn.toString()) }}
+          </template>
+
+          <template #total-header>
+            <span title="Sum of Balance, Pending Unstake, Pending Undelegations, and Delegations In, minus the Delegation Out">TOTAL</span>
+          </template>
+          <template #total-cell="{ row }">
+            {{ addCommas(row.original.total.toString()) }}
+          </template>
+        </UTable>
+      </div>
+
+      <div class="mt-4 flex justify-center">
+        <UPagination
+          :page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
+          :items-per-page="table?.tableApi?.getState().pagination.pageSize"
+          :total="table?.tableApi?.getFilteredRowModel().rows.length"
+          @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)"
+        />
+      </div>
     </template>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import Big from 'big.js';
+import { getPaginationRowModel } from '@tanstack/vue-table';
 import HE from '../modules/HE';
 import { addCommas } from '../helpers';
+import useAppLoader from '../composables/useAppLoader';
 
-export default {
-  name: 'Richlist',
-  data() {
-    return {
-      symbol: null,
-      token: '',
-      richlist: [],
-      currentPage: 1,
-      perPage: 50,
-      richlistFields: [
-        { key: 'index', label: '#', sortable: true },
-        { key: 'account', label: 'ACCOUNT', sortable: true },
-        {
-          key: 'balance', label: 'BALANCE', sortable: true, formatter: (n) => addCommas(n),
-        },
-        {
-          key: 'stake', label: 'STAKE', sortable: true, headerTitle: 'Sum of Stake, Delegation Out, and Pending Undelegations', formatter: (n) => addCommas(n),
-        },
-        {
-          key: 'pendingUnstake', label: 'PENDING UNSTAKE', sortable: true, formatter: (n) => addCommas(n),
-        },
-        {
-          key: 'delegationsOut', label: 'DELEGATION OUT', sortable: true, formatter: (n) => addCommas(n),
-        },
-        {
-          key: 'delegationsIn', label: 'DELEGATION IN', sortable: true, formatter: (n) => addCommas(n),
-        },
-        {
-          key: 'total', label: 'TOTAL', sortable: true, headerTitle: 'Sum of Balance, Pending Unstake, Pending Undelegations, and Delegations In, minus the Delegation Out', formatter: (n) => addCommas(n),
-        },
-      ],
-      dataLoaded: false,
-      loader: null,
-    };
-  },
+const route = useRoute();
+const router = useRouter();
 
-  computed: {
-    rows() {
-      return this.richlist.length;
-    },
-  },
-  watch: {
-    dataLoaded() {
-      this.loader.hide();
-    },
-    async symbol(symbol) {
-      await this.loadRichlist(symbol);
-    },
-  },
-  async created() {
-    this.loader = this.$loading.show();
+const loader = useAppLoader().show();
 
-    const { symbol } = this.$route.params;
+const symbol = ref(null);
+const token = ref('');
+const richlist = ref([]);
+const dataLoaded = ref(false);
+const failed = ref(false);
 
-    if (!symbol) {
-      if (this.loader.isActive) this.loader.hide();
+const table = ref(null);
+const pagination = ref({
+  pageIndex: 0,
+  pageSize: 50,
+});
+const sorting = ref([
+  { id: 'total', desc: true },
+]);
 
-      this.symbol = 'BEE';
-      this.$router.push({ name: 'richlist', params: { symbol: 'BEE' } });
-    } else {
-      this.symbol = symbol;
-    }
+const numericColumn = (key, header) => ({
+  accessorKey: key,
+  header,
+  accessorFn: (row) => parseFloat(row[key]),
+});
 
-    this.token = this.symbol;
-  },
-  methods: {
-    async loadRichlist(token) {
-      this.dataLoaded = false;
+const columns = [
+  { accessorKey: 'index', header: '#' },
+  { accessorKey: 'account', header: 'ACCOUNT' },
+  numericColumn('balance', 'BALANCE'),
+  numericColumn('stake', 'STAKE'),
+  numericColumn('pendingUnstake', 'PENDING UNSTAKE'),
+  numericColumn('delegationsOut', 'DELEGATION OUT'),
+  numericColumn('delegationsIn', 'DELEGATION IN'),
+  numericColumn('total', 'TOTAL'),
+];
 
-      const holders = [];
-      const limit = 1000;
-      let lastId = 0;
-      let newData = 0;
+watch(dataLoaded, () => {
+  loader.hide();
+});
 
-      do {
-        const data = await HE.getTokenHolders(token, lastId, limit);
+watch(symbol, async (s) => {
+  await loadRichlist(s);
+});
 
-        newData = data.length;
+init();
 
-        if (newData > 0) {
-          lastId = data.at(-1)._id;
-          holders.push(...data);
+async function init() {
+  const { symbol: s } = route.params;
 
-          if (data.length < limit) {
-            newData = 0;
-          }
+  if (!s) {
+    loader.hide();
+
+    symbol.value = 'BEE';
+    router.push({ name: 'richlist', params: { symbol: 'BEE' } });
+  } else {
+    symbol.value = s;
+  }
+
+  token.value = symbol.value;
+}
+
+async function loadRichlist(t) {
+  dataLoaded.value = false;
+
+  try {
+    const holders = [];
+    const limit = 1000;
+    let lastId = 0;
+    let newData;
+
+    do {
+      const data = await HE.getTokenHolders(t, lastId, limit);
+
+      if (!data) throw new Error('RPC unavailable');
+
+      newData = data.length;
+
+      if (newData > 0) {
+        lastId = data.at(-1)._id;
+        holders.push(...data);
+
+        if (data.length < limit) {
+          newData = 0;
         }
-      } while (newData > 0);
-
-      this.richlist = holders.map((h) => {
-        const balance = new Big(h.balance);
-        const stake = new Big(h.stake);
-        const pendingUnstake = new Big(h.pendingUnstake);
-        const pendingUndelegations = new Big(h.pendingUndelegations);
-        const delegationsOut = new Big(h.delegationsOut);
-        const delegationsIn = new Big(h.delegationsIn);
-
-        return {
-          account: h.account,
-          balance,
-          stake,
-          pendingUnstake,
-          pendingUndelegations,
-          delegationsIn,
-          delegationsOut,
-          total: balance
-            .plus(stake)
-            .plus(pendingUnstake)
-            .plus(pendingUndelegations)
-            .plus(delegationsIn)
-            .minus(delegationsOut),
-        };
-      })
-        .sort((a, b) => parseFloat(b.total) - parseFloat(a.total))
-        .map((t, index) => ({
-          index,
-          ...t,
-        }));
-
-      this.dataLoaded = true;
-    },
-
-    getRichList() {
-      if (this.token !== this.symbol) {
-        this.$router.push({ name: 'richlist', params: { symbol: this.token } });
       }
-    },
-  },
-};
+    } while (newData > 0);
+
+    richlist.value = holders.map((h) => {
+      const balance = new Big(h.balance);
+      const stake = new Big(h.stake);
+      const pendingUnstake = new Big(h.pendingUnstake);
+      const pendingUndelegations = new Big(h.pendingUndelegations);
+      const delegationsOut = new Big(h.delegationsOut);
+      const delegationsIn = new Big(h.delegationsIn);
+
+      return {
+        account: h.account,
+        balance,
+        stake,
+        pendingUnstake,
+        pendingUndelegations,
+        delegationsIn,
+        delegationsOut,
+        total: balance
+          .plus(stake)
+          .plus(pendingUnstake)
+          .plus(pendingUndelegations)
+          .plus(delegationsIn)
+          .minus(delegationsOut),
+      };
+    })
+      .sort((a, b) => parseFloat(b.total) - parseFloat(a.total))
+      .map((t2, index) => ({
+        index,
+        ...t2,
+      }));
+
+    failed.value = false;
+  } catch {
+    failed.value = true;
+    richlist.value = [];
+  } finally {
+    dataLoaded.value = true;
+  }
+}
+
+function getRichList() {
+  if (token.value !== symbol.value) {
+    router.push({ name: 'richlist', params: { symbol: token.value } });
+  }
+}
 </script>

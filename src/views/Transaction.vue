@@ -1,42 +1,53 @@
 <template>
-  <div class="container-fluid pt-3 pb-3">
+  <div class="px-3 pt-3 pb-3">
     <template v-if="dataLoaded">
-      <div v-if="transaction" class="transaction">
-        <json-viewer :value="transaction" :expand-depth="5" copyable sort />
+      <div
+        v-if="transaction"
+        class="transaction"
+      >
+        <JsonViewer
+          :value="transaction"
+          :theme="isDark ? 'jv-dark' : 'jv-light'"
+          :expand-depth="5"
+          copyable
+          sort
+        />
       </div>
 
       <div v-else>
-        Transaction not found!
+        {{ failed ? 'Failed to load transaction. Please try again.' : 'Transaction not found!' }}
       </div>
     </template>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
-import JsonViewer from 'vue-json-viewer';
+import { JsonViewer } from 'vue3-json-viewer';
 import HE from '../modules/HE';
 import { parseJSON } from '../helpers';
+import useAppLoader from '../composables/useAppLoader';
 
-export default {
-  name: 'Transaction',
-  components: { JsonViewer },
-  data() {
-    return {
-      transaction: null,
-      dataLoaded: false,
-      loader: null,
-    };
-  },
-  watch: {
-    dataLoaded(loaded) {
-      if (loaded) this.loader.hide();
-    },
-  },
-  async created() {
-    this.loader = this.$loading.show();
+const { isDark, show } = useAppLoader();
+const loader = show();
 
-    const { txid } = this.$route.params;
+const route = useRoute();
+
+const transaction = ref(null);
+const dataLoaded = ref(false);
+const failed = ref(false);
+
+watch(dataLoaded, (loaded) => {
+  if (loaded) loader.hide();
+});
+
+init();
+
+async function init() {
+  try {
+    const { txid } = route.params;
 
     const regex = new RegExp(/^([\d]+)-[\d]+$/m);
 
@@ -53,20 +64,19 @@ export default {
       const transactions = data.result.transactions
         .map(({ operations, transaction_id: trxId }) => {
           operations.forEach((o, i) => {
-            // eslint-disable-next-line no-param-reassign
             o[1].trxId = operations.length > 1 ? `${trxId}-${i}` : trxId;
           });
 
           return operations;
         }).flat();
 
-      const transaction = transactions.find((t) => t[0] === 'custom_json' && t[1].id === 'ssc-mainnet-hive');
+      const trx = transactions.find((t) => t[0] === 'custom_json' && t[1].id === 'ssc-mainnet-hive');
 
-      if (transaction) {
-        const trx = await HE.getTransactionInfo(transaction[1].trxId);
+      if (trx) {
+        const trxInfo = await HE.getTransactionInfo(trx[1].trxId);
 
-        if (trx) {
-          const { blockNumber: heBlock } = trx;
+        if (trxInfo) {
+          const { blockNumber: heBlock } = trxInfo;
 
           const heBlockData = await HE.getBlockInfo(heBlock);
 
@@ -81,21 +91,23 @@ export default {
             blockNumber: heBlock,
           };
 
-          this.transaction = trxResponse;
+          transaction.value = trxResponse;
         }
       }
     } else {
-      const transaction = await HE.getTransactionInfo(txid);
+      const trxInfo = await HE.getTransactionInfo(txid);
 
-      if (transaction) {
-        if (transaction.payload) transaction.payload = parseJSON(transaction.payload);
-        if (transaction.logs) transaction.logs = parseJSON(transaction.logs);
+      if (trxInfo) {
+        if (trxInfo.payload) trxInfo.payload = parseJSON(trxInfo.payload);
+        if (trxInfo.logs) trxInfo.logs = parseJSON(trxInfo.logs);
 
-        this.transaction = transaction;
+        transaction.value = trxInfo;
       }
     }
-
-    this.dataLoaded = true;
-  },
-};
+  } catch {
+    failed.value = true;
+  } finally {
+    dataLoaded.value = true;
+  }
+}
 </script>

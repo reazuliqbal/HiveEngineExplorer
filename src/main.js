@@ -1,41 +1,15 @@
-import Vue from 'vue';
-import Loading from 'vue-loading-overlay';
-import VueTimeago from 'vue-timeago';
-import {
-  ButtonPlugin, NavbarPlugin, FormGroupPlugin, FormInputPlugin,
-  PaginationPlugin, TablePlugin, LayoutPlugin,
-  FormPlugin, ModalPlugin,
-} from 'bootstrap-vue';
+import { createApp } from 'vue';
+import ui from '@nuxt/ui/vue-plugin';
 import App from './App.vue';
 import router from './router';
 
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-vue/dist/bootstrap-vue.css';
+import 'vue-loading-overlay/dist/css/index.css';
+import 'vue3-json-viewer/dist/vue3-json-viewer.css';
+import './assets/css/main.css';
 
-import 'vue-loading-overlay/dist/vue-loading.css';
-import './styles/app.scss';
+const app = createApp(App);
 
-Vue.use(ButtonPlugin);
-Vue.use(NavbarPlugin);
-Vue.use(FormGroupPlugin);
-Vue.use(FormInputPlugin);
-Vue.use(PaginationPlugin);
-Vue.use(TablePlugin);
-Vue.use(LayoutPlugin);
-Vue.use(FormPlugin);
-Vue.use(ModalPlugin);
-Vue.use(VueTimeago, {
-  name: 'Timeago',
-  locale: 'en',
-});
+app.use(router);
+app.use(ui);
 
-Vue.use(Loading, {
-  color: 'red',
-});
-
-Vue.config.productionTip = false;
-
-new Vue({
-  router,
-  render: (h) => h(App),
-}).$mount('#app');
+app.mount('#app');

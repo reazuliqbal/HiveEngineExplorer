@@ -1,11 +1,19 @@
 <template>
-  <div class="container-fluid pt-3 pb-3">
+  <div class="px-3 pt-3 pb-3">
     <div
       v-if="dataLoaded"
       class="transaction"
     >
-      <json-viewer
+      <p
+        v-if="failed"
+        class="text-lg text-muted"
+      >
+        Failed to load block. Please try again.
+      </p>
+      <JsonViewer
+        v-else
         :value="block"
+        :theme="isDark ? 'jv-dark' : 'jv-light'"
         :expand-depth="5"
         copyable
         sort
@@ -14,49 +22,55 @@
   </div>
 </template>
 
-<script>
-import JsonViewer from 'vue-json-viewer';
+<script setup>
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { JsonViewer } from 'vue3-json-viewer';
 import { parseJSON } from '../helpers';
 import HE from '../modules/HE';
+import useAppLoader from '../composables/useAppLoader';
 
-export default {
-  name: 'Block',
-  components: { JsonViewer },
-  data() {
-    return {
-      blockNum: 0,
-      block: [],
-      dataLoaded: false,
-      loader: null,
-    };
-  },
-  watch: {
-    dataLoaded(loaded) {
-      if (loaded) this.loader.hide();
-    },
-  },
-  async created() {
-    this.loader = this.$loading.show();
+const route = useRoute();
 
-    this.blockNum = this.$route.params.block;
+const { isDark, show } = useAppLoader();
+const loader = show();
 
-    const block = await HE.getBlockInfo(this.blockNum);
+const blockNum = ref(0);
+const block = ref([]);
+const dataLoaded = ref(false);
+const failed = ref(false);
 
-    this.block = {
-      ...block,
-      transactions: block.transactions.map((t) => ({
+watch(dataLoaded, (loaded) => {
+  if (loaded) loader.hide();
+});
+
+init();
+
+async function init() {
+  blockNum.value = route.params.block;
+
+  try {
+    const blockData = await HE.getBlockInfo(blockNum.value);
+
+    if (!blockData) throw new Error('RPC unavailable');
+
+    block.value = {
+      ...blockData,
+      transactions: blockData.transactions.map((t) => ({
         ...t,
         logs: parseJSON(t.logs),
         payload: parseJSON(t.payload),
       })),
-      virtualTransactions: block.virtualTransactions.map((t) => ({
+      virtualTransactions: blockData.virtualTransactions.map((t) => ({
         ...t,
         logs: parseJSON(t.logs),
         payload: parseJSON(t.payload),
       })),
     };
-
-    this.dataLoaded = true;
-  },
-};
+  } catch {
+    failed.value = true;
+  } finally {
+    dataLoaded.value = true;
+  }
+}
 </script>

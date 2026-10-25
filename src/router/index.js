@@ -1,8 +1,5 @@
-import Vue from 'vue';
-import VueRouter from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
-
-Vue.use(VueRouter);
 
 const routes = [
   {
@@ -13,28 +10,27 @@ const routes = [
   {
     path: '/@:username',
     name: 'explorer',
-    component: () => import(/* webpackChunkName: "explorer" */ '../views/Explorer.vue'),
+    component: () => import('../views/Explorer.vue'),
   },
   {
     path: '/tx/:txid',
     name: 'transaction',
-    component: () => import(/* webpackChunkName: "transaction" */ '../views/Transaction.vue'),
+    component: () => import('../views/Transaction.vue'),
   },
   {
     path: '/b/:block',
     name: 'block',
-    component: () => import(/* webpackChunkName: "block" */ '../views/Block.vue'),
+    component: () => import('../views/Block.vue'),
   },
   {
     path: '/richlist/:symbol?',
     name: 'richlist',
-    component: () => import(/* webpackChunkName: "richlist" */ '../views/Richlist.vue'),
+    component: () => import('../views/Richlist.vue'),
   },
 ];
 
-const router = new VueRouter({
-  mode: 'history',
-  base: process.env.BASE_URL,
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
 

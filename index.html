@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico">
+  <title>Hive-Engine Explorer</title>
+  <script>
+    // Apply the persisted/system color scheme before the app mounts
+    // to avoid a flash of the wrong theme (mirrors useDark() from @vueuse).
+    (function () {
+      try {
+        var raw = localStorage.getItem('vueuse-color-scheme');
+        if (raw) {
+          try {
+            raw = JSON.parse(raw);
+          } catch (e) { /* stored as a plain string */ }
+        }
+        var dark = raw === 'dark'
+          || ((raw === null || raw === 'auto' || raw === undefined)
+            && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
+</head>
+
+<body>
+  <noscript>
+    <strong>We're sorry but Hive-Engine Explorer doesn't work properly without JavaScript enabled. Please enable it to
+      continue.</strong>
+  </noscript>
+  <div id="app" class="isolate"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
