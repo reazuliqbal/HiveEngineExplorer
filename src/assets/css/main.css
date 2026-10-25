@@ -8,6 +8,17 @@
   --ui-bg-elevated: #ffffff;
   --ui-primary: var(--ui-color-primary-600);
   --ui-text-muted: var(--ui-color-neutral-600);
+
+  /* Inline <code> chips */
+  --code-fg: #be185d;
+  --code-bg: rgb(0 0 0 / 5%);
+
+  /* JSON syntax colors (vue3-json-viewer) */
+  --json-key: #6d28d9;
+  --json-string: #047857;
+  --json-number: #1d4ed8;
+  --json-boolean: #be185d;
+  --json-null: #dc2626;
 }
 
 /* Dark mode: framework defaults (mirrors @nuxt/ui .dark block, so the
@@ -17,11 +28,27 @@
   --ui-bg-elevated: var(--ui-color-neutral-800);
   --ui-primary: var(--ui-color-primary-400);
   --ui-text-muted: var(--ui-color-neutral-400);
+
+  --code-fg: #f472b6;
+  --code-bg: rgb(255 255 255 / 8%);
+
+  --json-key: #c4b5fd;
+  --json-string: #34d399;
+  --json-number: #93c5fd;
+  --json-boolean: #f472b6;
+  --json-null: #f87171;
 }
 
+/* Inline code: distinguished monospace chip (pink accent, like the
+   Bootstrap 4 look this app originally had) */
 code {
   margin-left: 5px;
   margin-right: 5px;
+  padding: 0.125rem 0.35rem;
+  border-radius: 0.375rem;
+  font-size: 0.875em;
+  color: var(--code-fg);
+  background-color: var(--code-bg);
 }
 
 a {
@@ -34,4 +61,50 @@ a {
 .app-footer {
   margin-top: 30px;
   text-align: center;
+}
+
+/* JSON viewer: the library's bundled theme CSS never matches the classes
+   it renders (jv-jv-light vs .jv-light), so theme it ourselves. */
+.jv-container {
+  background: var(--ui-bg-elevated);
+  border: 1px solid var(--ui-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: var(--ui-text);
+}
+
+.jv-container .jv-key {
+  color: var(--json-key);
+  font-weight: 500;
+}
+
+.jv-container .jv-item.jv-string {
+  color: var(--json-string);
+}
+
+.jv-container .jv-item.jv-number {
+  color: var(--json-number);
+}
+
+.jv-container .jv-item.jv-boolean {
+  color: var(--json-boolean);
+}
+
+.jv-container .jv-item.jv-undefined,
+.jv-container .jv-item.jv-null {
+  color: var(--json-null);
+}
+
+.jv-container .jv-item.jv-object,
+.jv-container .jv-item.jv-array {
+  color: var(--ui-text-muted);
+}
+
+.jv-container .jv-button {
+  color: var(--ui-primary);
+}
+
+.jv-container .jv-ellipsis {
+  color: var(--ui-text-dimmed);
+  background: var(--ui-bg-accented);
 }
