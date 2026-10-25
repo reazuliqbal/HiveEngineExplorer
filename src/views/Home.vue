@@ -1,83 +1,128 @@
 <template>
-  <div class="container-fluid pt-3 pb-3">
+  <div class="px-3 pt-3 pb-3">
     <h2>
       Recent transactions
       <small
         v-if="blockNumber"
-        class="text-muted"
+        class="text-muted text-sm"
       >Block# {{ blockNumber }}</small>
     </h2>
     <div
-      v-if="dataLoaded && transactions.length >0"
+      v-if="dataLoaded && transactions.length > 0"
       class="transactions"
     >
       <div
-        v-for="(t,i) in transactions"
+        v-for="(t, i) in transactions"
         :key="i"
-        class="card mb-2"
+        class="mb-2 rounded border border-default bg-elevated p-1 shadow-xs"
       >
-        <div class="card-body p-1">
-          <div class="card-text">
+        <div class="px-1 py-1">
+          <div>
             <template v-if="t.contract === 'tokens'">
               <template v-if="t.action === 'transfer'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> transferred
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> transferred
                 <code>{{ t.payload.quantity }} {{ t.payload.symbol }}</code> to
-                <a :href="`/@${t.payload.to}`">@{{ t.payload.to }}</a>
+                <a
+                  :href="`/@${t.payload.to}`"
+                  class="text-primary"
+                >@{{ t.payload.to }}</a>
                 <code>{{ t.payload.memo }}</code>
               </template>
 
               <template v-if="t.action === 'stake'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> staked
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> staked
                 <code>{{ t.payload.quantity }} {{ t.payload.symbol }}</code> to
-                <a :href="`/@${t.payload.to}`">@{{ t.payload.to }}</a>
+                <a
+                  :href="`/@${t.payload.to}`"
+                  class="text-primary"
+                >@{{ t.payload.to }}</a>
                 <code>{{ t.payload.memo }}</code>
               </template>
 
               <template v-if="t.action === 'unstake'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> unstaked
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> unstaked
                 <code>{{ t.payload.quantity }} {{ t.payload.symbol }}</code>
               </template>
 
               <template v-if="t.action === 'cancelUnstake'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> cancelled unstaked.
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> cancelled unstaked.
                 <code>ID: {{ t.payload.id }}</code>
               </template>
 
               <template v-if="t.action === 'delegate'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> delegated
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> delegated
                 <code>{{ t.payload.quantity }} {{ t.payload.symbol }}</code> to
-                <a :href="`/@${t.payload.to}`">@{{ t.payload.to }}</a>
+                <a
+                  :href="`/@${t.payload.to}`"
+                  class="text-primary"
+                >@{{ t.payload.to }}</a>
               </template>
 
               <template v-if="t.action === 'undelegate'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> undelegated
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> undelegated
                 <code>{{ t.payload.quantity }} {{ t.payload.symbol }}</code> from
-                <a :href="`/@${t.payload.to}`">@{{ t.payload.to }}</a>
+                <a
+                  :href="`/@${t.payload.to}`"
+                  class="text-primary"
+                >@{{ t.payload.to }}</a>
               </template>
 
               <template v-if="t.action === 'issue'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> issued
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> issued
                 <code>{{ t.payload.quantity }} {{ t.payload.symbol }}</code> to
-                <a :href="`/@${t.payload.to}`">@{{ t.payload.to }}</a>
+                <a
+                  :href="`/@${t.payload.to}`"
+                  class="text-primary"
+                >@{{ t.payload.to }}</a>
                 <code>{{ t.payload.memo }}</code>
               </template>
             </template>
 
             <template v-if="t.contract === 'market'">
               <template v-if="t.action === 'sell'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> wants to sell
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> wants to sell
                 <code>{{ t.payload.quantity }} {{ t.payload.symbol }}</code> at
                 <code>{{ t.payload.price }} SWAP.HIVE/{{ t.payload.symbol }}</code>
               </template>
 
               <template v-if="t.action === 'buy'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> wants to buy
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> wants to buy
                 <code>{{ t.payload.quantity }} {{ t.payload.symbol }}</code> at
                 <code>{{ t.payload.price }} SWAP.HIVE/{{ t.payload.symbol }}</code>
               </template>
 
               <template v-if="t.action === 'cancel'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> cancelled a
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> cancelled a
                 <code>{{ t.payload.type }}</code> order.
                 <code>ID: {{ t.payload.id }}</code>
               </template>
@@ -85,16 +130,25 @@
 
             <template v-if="t.contract === 'hivepegged'">
               <template v-if="t.action === 'withdraw'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> requested withdrawal of
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> requested withdrawal of
                 <code>{{ t.payload.quantity }} SWAP.HIVE</code>.
               </template>
               <template v-if="t.action === 'buy'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> wants to buy
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> wants to buy
                 <code>SWAP.HIVE</code> worth
                 <code>{{ t.payload.amountHIVEHBD }}</code>
               </template>
               <template v-if="t.action === 'removeWithdrawal'">
-                <a :href="`/@${t.sender}`">@{{ t.sender }}</a> removed withdrawal request.
+                <a
+                  :href="`/@${t.sender}`"
+                  class="text-primary"
+                >@{{ t.sender }}</a> removed withdrawal request.
                 <code>ID: {{ t.payload.id }}</code>
                 Recipient:
                 <code>{{ t.payload.recipient }}</code>
@@ -113,10 +167,10 @@
 
             <router-link
               :to="{ name: 'block', params: { block: blockNumber } }"
-              class="small"
+              class="small text-sm text-primary"
               :title="timestamp.toGMTString()"
             >
-              <timeago
+              <TimeAgo
                 :datetime="timestamp"
                 :auto-update="60"
               />
@@ -124,9 +178,9 @@
 
             <router-link
               :to="{ name: 'transaction', params: { txid: t.transactionId } }"
-              class="small text-muted float-right"
+              class="small text-sm text-muted float-right"
             >
-              {{ t.transactionId.substr(0,8) }}
+              {{ t.transactionId.substr(0, 8) }}
             </router-link>
           </div>
         </div>
@@ -134,60 +188,53 @@
     </div>
 
     <div v-else>
-      <p class="h5 text-muted">
+      <p class="text-lg text-muted">
         No transaction found in this block.
       </p>
     </div>
   </div>
 </template>
 
-<script>
-import formatDistanceToNow from 'date-fns/formatDistanceToNow';
+<script setup>
+import { ref, watch } from 'vue';
+import { useLoading } from 'vue-loading-overlay';
 import HE from '../modules/HE';
+import TimeAgo from '../components/TimeAgo.vue';
 
-export default {
-  name: 'Home',
-  data() {
-    return {
-      blockNumber: null,
-      timestamp: null,
-      transactions: [],
-      dataLoaded: false,
-      loader: null,
-    };
-  },
-  watch: {
-    dataLoaded(loaded) {
-      if (loaded) this.loader.hide();
-    },
-  },
-  async created() {
-    this.loader = this.$loading.show();
+const loading = useLoading();
+const loader = loading.show({ color: 'red' });
 
-    this.txid = this.$route.params.txid || null;
-    let transactions = [];
+const blockNumber = ref(null);
+const timestamp = ref(null);
+const transactions = ref([]);
+const dataLoaded = ref(false);
 
-    const blockData = await HE.getLatestBlockInfo();
+watch(dataLoaded, (loaded) => {
+  if (loaded) loader.hide();
+});
 
-    this.blockNumber = blockData.blockNumber;
-    this.timestamp = new Date(`${blockData.timestamp}Z`);
+init();
 
-    if (blockData.transactions.length > 0) {
-      transactions = blockData.transactions
-        .map((t) => ({
-          ...t,
-          logs: JSON.parse(t.logs),
-          payload: JSON.parse(t.payload),
-        }))
-        .filter((t) => !t.logs.error);
-    }
+async function init() {
+  let txs = [];
 
-    this.transactions = transactions;
+  const blockData = await HE.getLatestBlockInfo();
 
-    this.dataLoaded = true;
-  },
-  methods: {
-    formatDistanceToNow,
-  },
-};
+  blockNumber.value = blockData.blockNumber;
+  timestamp.value = new Date(`${blockData.timestamp}Z`);
+
+  if (blockData.transactions.length > 0) {
+    txs = blockData.transactions
+      .map((t) => ({
+        ...t,
+        logs: JSON.parse(t.logs),
+        payload: JSON.parse(t.payload),
+      }))
+      .filter((t) => !t.logs.error);
+  }
+
+  transactions.value = txs;
+
+  dataLoaded.value = true;
+}
 </script>

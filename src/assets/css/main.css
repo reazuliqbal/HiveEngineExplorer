@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* Match the original app look: light gray page, white cards */
+:root {
+  --ui-bg: #f1f1f1;
+  --ui-bg-elevated: #ffffff;
+}
+
+code {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+a {
+  &:hover,
+  &:focus {
+    text-decoration: none;
+  }
+}
+
+.app-footer {
+  margin-top: 30px;
+  text-align: center;
+}

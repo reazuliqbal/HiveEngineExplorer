@@ -7,7 +7,7 @@ export const addCommas = (nStr, currency = false) => {
   const rgx = /(\d+)(\d{3})/;
 
   while (rgx.test(x1)) {
-    // eslint-disable-next-line no-useless-concat
+
     x1 = x1.replace(rgx, '$1' + ',' + '$2');
   }
 

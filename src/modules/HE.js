@@ -24,7 +24,7 @@ const call = async (endpoint, request) => {
     });
 
     if (post.status === 200) result = post.data.result;
-  } catch (e) {
+  } catch {
     // console.log(e.message);
   }
 
@@ -68,7 +68,7 @@ const getTokenHolders = async (symbol, lastId = 0, limit = 1000) => {
   const query = {};
   if (symbol) query.symbol = symbol;
   if (lastId !== 0) {
-    // eslint-disable-next-line no-underscore-dangle
+
     query._id = { $gt: lastId };
   }
 

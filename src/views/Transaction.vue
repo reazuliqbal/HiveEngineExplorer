@@ -1,8 +1,16 @@
 <template>
-  <div class="container-fluid pt-3 pb-3">
+  <div class="px-3 pt-3 pb-3">
     <template v-if="dataLoaded">
-      <div v-if="transaction" class="transaction">
-        <json-viewer :value="transaction" :expand-depth="5" copyable sort />
+      <div
+        v-if="transaction"
+        class="transaction"
+      >
+        <JsonViewer
+          :value="transaction"
+          :expand-depth="5"
+          copyable
+          sort
+        />
       </div>
 
       <div v-else>
@@ -12,90 +20,89 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
-import JsonViewer from 'vue-json-viewer';
+import { JsonViewer } from 'vue3-json-viewer';
+import { useLoading } from 'vue-loading-overlay';
 import HE from '../modules/HE';
 import { parseJSON } from '../helpers';
 
-export default {
-  name: 'Transaction',
-  components: { JsonViewer },
-  data() {
-    return {
-      transaction: null,
-      dataLoaded: false,
-      loader: null,
-    };
-  },
-  watch: {
-    dataLoaded(loaded) {
-      if (loaded) this.loader.hide();
-    },
-  },
-  async created() {
-    this.loader = this.$loading.show();
+const loading = useLoading();
+const loader = loading.show({ color: 'red' });
 
-    const { txid } = this.$route.params;
+const route = useRoute();
 
-    const regex = new RegExp(/^([\d]+)-[\d]+$/m);
+const transaction = ref(null);
+const dataLoaded = ref(false);
 
-    if (regex.test(txid)) {
-      const [, blockNumber] = regex.exec(txid);
+watch(dataLoaded, (loaded) => {
+  if (loaded) loader.hide();
+});
 
-      const { data } = await axios.post('https://api.hive.blog', {
-        jsonrpc: '2.0',
-        id: 0,
-        method: 'condenser_api.get_block',
-        params: [Number(blockNumber)],
-      });
+init();
 
-      const transactions = data.result.transactions
-        .map(({ operations, transaction_id: trxId }) => {
-          operations.forEach((o, i) => {
-            // eslint-disable-next-line no-param-reassign
-            o[1].trxId = operations.length > 1 ? `${trxId}-${i}` : trxId;
-          });
+async function init() {
+  const { txid } = route.params;
 
-          return operations;
-        }).flat();
+  const regex = new RegExp(/^([\d]+)-[\d]+$/m);
 
-      const transaction = transactions.find((t) => t[0] === 'custom_json' && t[1].id === 'ssc-mainnet-hive');
+  if (regex.test(txid)) {
+    const [, blockNumber] = regex.exec(txid);
 
-      if (transaction) {
-        const trx = await HE.getTransactionInfo(transaction[1].trxId);
+    const { data } = await axios.post('https://api.hive.blog', {
+      jsonrpc: '2.0',
+      id: 0,
+      method: 'condenser_api.get_block',
+      params: [Number(blockNumber)],
+    });
 
-        if (trx) {
-          const { blockNumber: heBlock } = trx;
+    const transactions = data.result.transactions
+      .map(({ operations, transaction_id: trxId }) => {
+        operations.forEach((o, i) => {
+           
+          o[1].trxId = operations.length > 1 ? `${trxId}-${i}` : trxId;
+        });
 
-          const heBlockData = await HE.getBlockInfo(heBlock);
+        return operations;
+      }).flat();
 
-          const vt = heBlockData.virtualTransactions.find((t) => t.transactionId === txid);
+    const trx = transactions.find((t) => t[0] === 'custom_json' && t[1].id === 'ssc-mainnet-hive');
 
-          if (vt.logs) {
-            vt.logs = parseJSON(vt.logs);
-          }
+    if (trx) {
+      const trxInfo = await HE.getTransactionInfo(trx[1].trxId);
 
-          const trxResponse = {
-            ...vt,
-            blockNumber: heBlock,
-          };
+      if (trxInfo) {
+        const { blockNumber: heBlock } = trxInfo;
 
-          this.transaction = trxResponse;
+        const heBlockData = await HE.getBlockInfo(heBlock);
+
+        const vt = heBlockData.virtualTransactions.find((t) => t.transactionId === txid);
+
+        if (vt.logs) {
+          vt.logs = parseJSON(vt.logs);
         }
-      }
-    } else {
-      const transaction = await HE.getTransactionInfo(txid);
 
-      if (transaction) {
-        if (transaction.payload) transaction.payload = parseJSON(transaction.payload);
-        if (transaction.logs) transaction.logs = parseJSON(transaction.logs);
+        const trxResponse = {
+          ...vt,
+          blockNumber: heBlock,
+        };
 
-        this.transaction = transaction;
+        transaction.value = trxResponse;
       }
     }
+  } else {
+    const trxInfo = await HE.getTransactionInfo(txid);
 
-    this.dataLoaded = true;
-  },
-};
+    if (trxInfo) {
+      if (trxInfo.payload) trxInfo.payload = parseJSON(trxInfo.payload);
+      if (trxInfo.logs) trxInfo.logs = parseJSON(trxInfo.logs);
+
+      transaction.value = trxInfo;
+    }
+  }
+
+  dataLoaded.value = true;
+}
 </script>
