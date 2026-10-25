@@ -39,6 +39,7 @@
           color="error"
           variant="outline"
           size="sm"
+          class="text-red-400 ring-red-400/60 hover:text-red-300"
           :disabled="account.length < 3"
           @click="getAccountHistory"
         >

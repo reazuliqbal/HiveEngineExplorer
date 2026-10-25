@@ -165,6 +165,10 @@
               NFT MARKET is not supported yet.
             </template>
 
+            <template v-else-if="!['tokens', 'market', 'hivepegged', 'nft', 'nftmarket'].includes(t.contract)">
+              <code>{{ t.contract }} / {{ t.action }}</code>
+            </template>
+
             <router-link
               :to="{ name: 'block', params: { block: blockNumber } }"
               class="small text-sm text-primary"
@@ -189,7 +193,7 @@
 
     <div v-else>
       <p class="text-lg text-muted">
-        No transaction found in this block.
+        {{ failed ? 'Failed to load recent transactions. Please try again.' : 'No transaction found in this block.' }}
       </p>
     </div>
   </div>
@@ -208,6 +212,7 @@ const blockNumber = ref(null);
 const timestamp = ref(null);
 const transactions = ref([]);
 const dataLoaded = ref(false);
+const failed = ref(false);
 
 watch(dataLoaded, (loaded) => {
   if (loaded) loader.hide();
@@ -218,23 +223,29 @@ init();
 async function init() {
   let txs = [];
 
-  const blockData = await HE.getLatestBlockInfo();
+  try {
+    const blockData = await HE.getLatestBlockInfo();
 
-  blockNumber.value = blockData.blockNumber;
-  timestamp.value = new Date(`${blockData.timestamp}Z`);
+    if (!blockData) throw new Error('RPC unavailable');
 
-  if (blockData.transactions.length > 0) {
-    txs = blockData.transactions
-      .map((t) => ({
-        ...t,
-        logs: JSON.parse(t.logs),
-        payload: JSON.parse(t.payload),
-      }))
-      .filter((t) => !t.logs.error);
+    blockNumber.value = blockData.blockNumber;
+    timestamp.value = new Date(`${blockData.timestamp}Z`);
+
+    if (blockData.transactions.length > 0) {
+      txs = blockData.transactions
+        .map((t) => ({
+          ...t,
+          logs: JSON.parse(t.logs),
+          payload: JSON.parse(t.payload),
+        }))
+        .filter((t) => !t.logs.error);
+    }
+
+    transactions.value = txs;
+  } catch {
+    failed.value = true;
+  } finally {
+    dataLoaded.value = true;
   }
-
-  transactions.value = txs;
-
-  dataLoaded.value = true;
 }
 </script>

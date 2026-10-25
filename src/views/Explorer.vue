@@ -449,6 +449,10 @@
               <code>{{ h.quantity }} {{ h.symbol }}</code> staked.
             </template>
 
+            <template v-else>
+              <code>{{ h.operation }}</code>
+            </template>
+
             <router-link
               :to="{ name: 'block', params: { block: h.blockNumber } }"
               class="small text-sm text-primary"
@@ -473,7 +477,7 @@
       </div>
 
       <div v-if="history.length === 0">
-        No history found.
+        {{ failed ? 'Failed to load history. Please try again.' : 'No history found.' }}
       </div>
     </div>
 
@@ -525,6 +529,7 @@ const page = ref(1);
 const limit = ref(50);
 const history = ref([]);
 const dataLoaded = ref(false);
+const failed = ref(false);
 
 watch(dataLoaded, (loaded) => {
   if (loaded) loader.hide();
@@ -562,13 +567,18 @@ async function fetchHistory(offset = 0) {
 
   const historyAPI = nodes?.historyAPI || 'https://accounts.hive-engine.com/accountHistory';
 
-  const { data } = await axios.get(historyAPI, {
-    params,
-  });
+  try {
+    const { data } = await axios.get(historyAPI, {
+      params,
+    });
 
-  history.value = data;
-
-  dataLoaded.value = true;
+    history.value = data;
+  } catch {
+    failed.value = true;
+    history.value = [];
+  } finally {
+    dataLoaded.value = true;
+  }
 }
 
 function getNextPage() {

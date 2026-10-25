@@ -14,7 +14,7 @@
             @keyup.enter="getRichList"
           />
           <UButton
-            color="info"
+            color="primary"
             variant="outline"
             :disabled="token.length < 1"
             @click="getRichList"
@@ -36,7 +36,7 @@
         >
           <template #empty>
             <h6 class="text-base font-semibold">
-              Nothing to show.
+              {{ failed ? 'Failed to load richlist. Please try again.' : 'Nothing to show.' }}
             </h6>
           </template>
 
@@ -110,6 +110,7 @@ const symbol = ref(null);
 const token = ref('');
 const richlist = ref([]);
 const dataLoaded = ref(false);
+const failed = ref(false);
 
 const table = ref(null);
 const pagination = ref({
@@ -165,57 +166,66 @@ async function init() {
 async function loadRichlist(t) {
   dataLoaded.value = false;
 
-  const holders = [];
-  const limit = 1000;
-  let lastId = 0;
-  let newData;
+  try {
+    const holders = [];
+    const limit = 1000;
+    let lastId = 0;
+    let newData;
 
-  do {
-    const data = await HE.getTokenHolders(t, lastId, limit);
+    do {
+      const data = await HE.getTokenHolders(t, lastId, limit);
 
-    newData = data.length;
+      if (!data) throw new Error('RPC unavailable');
 
-    if (newData > 0) {
-      lastId = data.at(-1)._id;
-      holders.push(...data);
+      newData = data.length;
 
-      if (data.length < limit) {
-        newData = 0;
+      if (newData > 0) {
+        lastId = data.at(-1)._id;
+        holders.push(...data);
+
+        if (data.length < limit) {
+          newData = 0;
+        }
       }
-    }
-  } while (newData > 0);
+    } while (newData > 0);
 
-  richlist.value = holders.map((h) => {
-    const balance = new Big(h.balance);
-    const stake = new Big(h.stake);
-    const pendingUnstake = new Big(h.pendingUnstake);
-    const pendingUndelegations = new Big(h.pendingUndelegations);
-    const delegationsOut = new Big(h.delegationsOut);
-    const delegationsIn = new Big(h.delegationsIn);
+    richlist.value = holders.map((h) => {
+      const balance = new Big(h.balance);
+      const stake = new Big(h.stake);
+      const pendingUnstake = new Big(h.pendingUnstake);
+      const pendingUndelegations = new Big(h.pendingUndelegations);
+      const delegationsOut = new Big(h.delegationsOut);
+      const delegationsIn = new Big(h.delegationsIn);
 
-    return {
-      account: h.account,
-      balance,
-      stake,
-      pendingUnstake,
-      pendingUndelegations,
-      delegationsIn,
-      delegationsOut,
-      total: balance
-        .plus(stake)
-        .plus(pendingUnstake)
-        .plus(pendingUndelegations)
-        .plus(delegationsIn)
-        .minus(delegationsOut),
-    };
-  })
-    .sort((a, b) => parseFloat(b.total) - parseFloat(a.total))
-    .map((t2, index) => ({
-      index,
-      ...t2,
-    }));
+      return {
+        account: h.account,
+        balance,
+        stake,
+        pendingUnstake,
+        pendingUndelegations,
+        delegationsIn,
+        delegationsOut,
+        total: balance
+          .plus(stake)
+          .plus(pendingUnstake)
+          .plus(pendingUndelegations)
+          .plus(delegationsIn)
+          .minus(delegationsOut),
+      };
+    })
+      .sort((a, b) => parseFloat(b.total) - parseFloat(a.total))
+      .map((t2, index) => ({
+        index,
+        ...t2,
+      }));
 
-  dataLoaded.value = true;
+    failed.value = false;
+  } catch {
+    failed.value = true;
+    richlist.value = [];
+  } finally {
+    dataLoaded.value = true;
+  }
 }
 
 function getRichList() {

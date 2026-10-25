@@ -4,7 +4,14 @@
       v-if="dataLoaded"
       class="transaction"
     >
+      <p
+        v-if="failed"
+        class="text-lg text-muted"
+      >
+        Failed to load block. Please try again.
+      </p>
       <JsonViewer
+        v-else
         :value="block"
         :expand-depth="5"
         copyable
@@ -30,6 +37,7 @@ const loader = loading.show({ color: 'red' });
 const blockNum = ref(0);
 const block = ref([]);
 const dataLoaded = ref(false);
+const failed = ref(false);
 
 watch(dataLoaded, (loaded) => {
   if (loaded) loader.hide();
@@ -40,22 +48,28 @@ init();
 async function init() {
   blockNum.value = route.params.block;
 
-  const blockData = await HE.getBlockInfo(blockNum.value);
+  try {
+    const blockData = await HE.getBlockInfo(blockNum.value);
 
-  block.value = {
-    ...blockData,
-    transactions: blockData.transactions.map((t) => ({
-      ...t,
-      logs: parseJSON(t.logs),
-      payload: parseJSON(t.payload),
-    })),
-    virtualTransactions: blockData.virtualTransactions.map((t) => ({
-      ...t,
-      logs: parseJSON(t.logs),
-      payload: parseJSON(t.payload),
-    })),
-  };
+    if (!blockData) throw new Error('RPC unavailable');
 
-  dataLoaded.value = true;
+    block.value = {
+      ...blockData,
+      transactions: blockData.transactions.map((t) => ({
+        ...t,
+        logs: parseJSON(t.logs),
+        payload: parseJSON(t.payload),
+      })),
+      virtualTransactions: blockData.virtualTransactions.map((t) => ({
+        ...t,
+        logs: parseJSON(t.logs),
+        payload: parseJSON(t.payload),
+      })),
+    };
+  } catch {
+    failed.value = true;
+  } finally {
+    dataLoaded.value = true;
+  }
 }
 </script>
